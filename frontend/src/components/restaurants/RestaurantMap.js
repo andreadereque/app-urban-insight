@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polygon } from 'react-leaflet';
 import MarkerClusterGroup from '@changey/react-leaflet-markercluster';
 import axios from 'axios';
 import L from 'leaflet';
@@ -7,12 +7,20 @@ import HeatmapLegend from './HeatmapLegend';
 import RestaurantMarkers from './RestaurantMarkers';
 import NeighborhoodPolygons from './NeighborhoodPolygons';
 import restIconPath from '../../assets/icons/rest_icon.png';
+import busIconPath from '../../assets/icons/bus.png';
 
 const restaurantIcon = new L.Icon({
   iconUrl: restIconPath,
   iconSize: [32, 32],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
+});
+
+const busIcon = new L.Icon({
+  iconUrl: busIconPath,
+  iconSize: [20, 20],
+  iconAnchor: [10, 20],
+  popupAnchor: [0, -20],
 });
 
 const createClusterCustomIcon = (cluster) => {
@@ -39,8 +47,14 @@ const RestaurantMap = ({ filteredRestaurants }) => {
   const [neighborhoods, setNeighborhoods] = useState([]);
   const [showNeighborhoods, setShowNeighborhoods] = useState(false);
   const [heatmapActive, setHeatmapActive] = useState(false);
+  const [showTransport, setShowTransport] = useState(false);
+  const [showPopularCategories, setShowPopularCategories] = useState(false);
+  const [selectedTransportType, setSelectedTransportType] = useState('');
   const [restaurantCounts, setRestaurantCounts] = useState({});
+  const [transportData, setTransportData] = useState([]);
+  const [categoryCountsByBarrio, setCategoryCountsByBarrio] = useState({});
   const neighborhoodLayersRef = useRef([]);
+  const transportLayersRef = useRef([]);
 
   useEffect(() => {
     axios.get("http://127.0.0.1:5000/api/demographics")
@@ -51,6 +65,18 @@ const RestaurantMap = ({ filteredRestaurants }) => {
   }, []);
 
   useEffect(() => {
+    if (showTransport) {
+      axios.get("http://127.0.0.1:5000/transport")
+        .then(response => {
+          setTransportData(response.data);
+        })
+        .catch(error => console.error("Error al cargar los datos de transporte", error));
+    } else {
+      clearTransportLayers();
+    }
+  }, [showTransport]);
+
+  useEffect(() => {
     const counts = filteredRestaurants.reduce((acc, restaurant) => {
       const barrio = restaurant.Barrio;
       if (!acc[barrio]) acc[barrio] = 0;
@@ -58,7 +84,55 @@ const RestaurantMap = ({ filteredRestaurants }) => {
       return acc;
     }, {});
     setRestaurantCounts(counts);
+
+    const categoryCounts = filteredRestaurants.reduce((acc, restaurant) => {
+      const barrio = restaurant.Barrio;
+      const category = restaurant["Categoría Cocina"];
+      if (!acc[barrio]) acc[barrio] = {};
+      if (!acc[barrio][category]) acc[barrio][category] = 0;
+      acc[barrio][category] += 1;
+      return acc;
+    }, {});
+    setCategoryCountsByBarrio(categoryCounts);
   }, [filteredRestaurants]);
+
+  useEffect(() => {
+    if (mapRef.current && showTransport && transportData.length) {
+      clearTransportLayers();
+      const currentZoom = mapRef.current.getZoom();
+      if (currentZoom >= 17) { // Mostrar transporte solo a un nivel de zoom cercano
+        transportData.forEach((transport) => {
+          if (!selectedTransportType || transport.Tipo === selectedTransportType) {
+            const { coordinates } = transport.Geometry;
+            const marker = L.marker([coordinates[1], coordinates[0]], { icon: busIcon }).addTo(mapRef.current);
+            marker.bindPopup(`<b>Tipo:</b> ${transport.Tipo}<br/><b>Líneas:</b> ${transport.Lineas.join(", ")}`);
+            transportLayersRef.current.push(marker);
+          }
+        });
+      }
+    }
+  }, [mapRef, showTransport, transportData, selectedTransportType]);
+
+  useEffect(() => {
+    if (mapRef.current) {
+      mapRef.current.on('zoomend', () => {
+        if (showTransport) {
+          clearTransportLayers();
+          const currentZoom = mapRef.current.getZoom();
+          if (currentZoom >= 17) { // Mostrar transporte solo a un nivel de zoom cercano
+            transportData.forEach((transport) => {
+              if (!selectedTransportType || transport.Tipo === selectedTransportType) {
+                const { coordinates } = transport.Geometry;
+                const marker = L.marker([coordinates[1], coordinates[0]], { icon: busIcon }).addTo(mapRef.current);
+                marker.bindPopup(`<b>Tipo:</b> ${transport.Tipo}<br/><b>Líneas:</b> ${transport.Lineas.join(", ")}`);
+                transportLayersRef.current.push(marker);
+              }
+            });
+          }
+        }
+      });
+    }
+  }, [mapRef, showTransport, transportData, selectedTransportType]);
 
   const getColorForRestaurantCount = (count) => {
     return count > 150 ? '#800026' :
@@ -70,11 +144,24 @@ const RestaurantMap = ({ filteredRestaurants }) => {
                          '#FFEDA0';
   };
 
+  const getPopularCategoryForBarrio = (barrio) => {
+    const categories = categoryCountsByBarrio[barrio];
+    if (!categories) return 'Desconocido';
+    return Object.keys(categories).reduce((a, b) => categories[a] > categories[b] ? a : b);
+  };
+
   const clearLayers = () => {
     neighborhoodLayersRef.current.forEach(layer => {
       mapRef.current.removeLayer(layer);
     });
     neighborhoodLayersRef.current = [];
+  };
+
+  const clearTransportLayers = () => {
+    transportLayersRef.current.forEach(layer => {
+      mapRef.current.removeLayer(layer);
+    });
+    transportLayersRef.current = [];
   };
 
   return (
@@ -120,6 +207,68 @@ const RestaurantMap = ({ filteredRestaurants }) => {
       >
         {heatmapActive ? 'Desactivar Heatmap' : 'Activar Heatmap'}
       </button>
+      <button
+        onClick={() => setShowTransport(!showTransport)}
+        style={{
+          marginBottom: '10px',
+          marginLeft: '15px',
+          padding: '10px 20px',
+          backgroundColor: showTransport ? '#d0e6a5' : '#b5e48c',
+          color: '#fff',
+          border: '2px solid #c4e69e',
+          borderRadius: '30px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          fontWeight: 'bold',
+          fontSize: '16px',
+        }}
+        onMouseOver={(e) => e.target.style.backgroundColor = showTransport ? '#e0f0c4' : '#c9eab3'}
+        onMouseOut={(e) => e.target.style.backgroundColor = showTransport ? '#d0e6a5' : '#b5e48c'}
+      >
+        {showTransport ? 'Ocultar Transporte' : 'Mostrar Transporte'}
+      </button>
+      <button
+        onClick={() => setShowPopularCategories(!showPopularCategories)}
+        style={{
+          marginBottom: '10px',
+          marginLeft: '15px',
+          padding: '10px 20px',
+          backgroundColor: showPopularCategories ? '#c5cae9' : '#7986cb',
+          color: '#fff',
+          border: '2px solid #9fa8da',
+          borderRadius: '30px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          fontWeight: 'bold',
+          fontSize: '16px',
+        }}
+        onMouseOver={(e) => e.target.style.backgroundColor = showPopularCategories ? '#d1d9ff' : '#9fa8da'}
+        onMouseOut={(e) => e.target.style.backgroundColor = showPopularCategories ? '#c5cae9' : '#7986cb'}
+      >
+        {showPopularCategories ? 'Ocultar Categorías Populares' : 'Mostrar Categorías Populares'}
+      </button>
+      {showTransport && (
+        <select
+          value={selectedTransportType}
+          onChange={(e) => setSelectedTransportType(e.target.value)}
+          style={{
+            marginBottom: '10px',
+            marginLeft: '15px',
+            padding: '10px',
+            borderRadius: '10px',
+            border: '1px solid #ccc',
+            fontSize: '16px',
+          }}
+        >
+          <option value="">Todos los transportes</option>
+          <option value="BUS">BUS</option>
+          <option value="METRO">METRO</option>
+          <option value="FGC">FGC</option>
+          <option value="RENFE">RENFE</option>
+        </select>
+      )}
       <MapContainer ref={mapRef} center={[41.3851, 2.1734]} zoom={13} style={{ height: 'calc(100vh - 300px)', width: '100%', position: 'relative' }}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -137,6 +286,23 @@ const RestaurantMap = ({ filteredRestaurants }) => {
           getColorForRestaurantCount={getColorForRestaurantCount}
           clearLayers={clearLayers}
         />
+        {showPopularCategories && neighborhoods.map((neighborhood, index) => (
+          neighborhood.Geometry && neighborhood.Geometry.coordinates && (
+            <Polygon
+              key={index}
+              positions={neighborhood.Geometry.coordinates[0].map(coord => [coord[1], coord[0]])}
+              color="blue"
+              fillOpacity={0.3}
+            >
+              <Popup>
+                <div>
+                  <b>Barrio:</b> {neighborhood.Nombre}<br/>
+                  <b>Categoría Popular:</b> {getPopularCategoryForBarrio(neighborhood.Nombre)}
+                </div>
+              </Popup>
+            </Polygon>
+          )
+        ))}
         {heatmapActive && <HeatmapLegend />}
       </MapContainer>
     </div>
