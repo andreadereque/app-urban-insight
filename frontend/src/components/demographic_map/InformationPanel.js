@@ -1,5 +1,10 @@
 import React from 'react';
+import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+
 import { Bar } from 'react-chartjs-2';
+
+// Registra las escalas y elementos necesarios para Chart.js
+Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
   const data = selectedNeighborhood || barcelonaData;
