@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='libs/leaflet.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Filter Controls -->
+    <div id="filters">
+        <label for="age-range">Age Range:</label>
+        <input type="range" id="age-range" min="0" max="100" step="5" />
+        <label for="income">Income:</label>
+        <input type="range" id="income" min="10000" max="100000" step="1000" />
+        <label for="household-size">Household Size:</label>
+        <select id="household-size">
+            <option value="1">1 person</option>
+            <option value="2">2 people</option>
+            <option value="3">3 people</option>
+        </select>
+        <label for="restaurant-type">Restaurant Type:</label>
+        <select id="restaurant-type">
+            <option value="fast_food">Fast Food</option>
+            <option value="gourmet">Gourmet</option>
+        </select>
+    </div>
+
+    <!-- Map -->
+    <div id="map" style="height: 500px;"></div>
+
+    <!-- Population Chart -->
+    <canvas id="populationChart" width="400" height="200"></canvas>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='libs/leaflet.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/Chart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+
+</body>
+</html>
