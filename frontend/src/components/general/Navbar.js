@@ -10,7 +10,7 @@ const NavigationBar = () => {
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
           <Nav.Link as={Link} to="/">Restaurant Map</Nav.Link>
-          <Nav.Link as={Link} to="/nationality-analysis">Nationality Analysis</Nav.Link>
+          <Nav.Link as={Link} to="/idealista">Idealista</Nav.Link>
           <Nav.Link as={Link} to="/interactive-maps">Interactive Maps</Nav.Link>
 
         </Nav>
