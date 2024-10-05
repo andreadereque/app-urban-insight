@@ -8,6 +8,7 @@ import RestaurantMarkers from './RestaurantMarkers';
 import NeighborhoodPolygons from './NeighborhoodPolygons';
 import restIconPath from '../../assets/icons/rest_icon.png';
 import busIconPath from '../../assets/icons/bus.png';
+import PopularCategoriesChart from './PopularCategoriesChart';
 
 const restaurantIcon = new L.Icon({
   iconUrl: restIconPath,
@@ -55,6 +56,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
   const [categoryCountsByBarrio, setCategoryCountsByBarrio] = useState({});
   const neighborhoodLayersRef = useRef([]);
   const transportLayersRef = useRef([]);
+
 
   useEffect(() => {
     axios.get("http://127.0.0.1:5000/api/demographics")
@@ -163,6 +165,36 @@ const RestaurantMap = ({ filteredRestaurants }) => {
     });
     transportLayersRef.current = [];
   };
+  useEffect(() => {
+    if (showPopularCategories) {
+      console.log("**Datos filtrados de restaurantes:", filteredRestaurants); // Verifica que cada restaurante tenga el campo 'Barrio'
+
+      const categoryCounts = filteredRestaurants.reduce((acc, restaurant) => {
+        const barrio = restaurant.Barrio; // Aquí tomamos el barrio
+        if (!barrio || barrio === "Desconocido") return acc; // Ignorar si el barrio está vacío o es "Desconocido"
+        
+        const category = restaurant["Tipo"];
+        if (!acc[barrio]) acc[barrio] = {};
+        if (!acc[barrio][category]) acc[barrio][category] = 0;
+        acc[barrio][category] += 1; // Aumentar el conteo de esa categoría en ese barrio
+        return acc;
+      }, {});
+      
+      const popularCategories = {};
+      for (let barrio in categoryCounts) {
+        const sortedCategories = Object.entries(categoryCounts[barrio]).sort((a, b) => b[1] - a[1]);
+        popularCategories[barrio] = sortedCategories[0]; // Obtener la categoría más popular
+      }
+      setCategoryCountsByBarrio(popularCategories);
+    }
+  }, [showPopularCategories, filteredRestaurants]);
+  
+  
+
+  const togglePopularCategories = () => {
+    setShowPopularCategories(!showPopularCategories);
+  };
+
 
   return (
     <div>
@@ -249,6 +281,9 @@ const RestaurantMap = ({ filteredRestaurants }) => {
       >
         {showPopularCategories ? 'Ocultar Categorías Populares' : 'Mostrar Categorías Populares'}
       </button>
+  
+      {showPopularCategories && <PopularCategoriesChart categoryCountsByBarrio={categoryCountsByBarrio} />}
+     
       {showTransport && (
         <select
           value={selectedTransportType}
@@ -269,6 +304,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
           <option value="RENFE">RENFE</option>
         </select>
       )}
+  
       <MapContainer ref={mapRef} center={[41.3851, 2.1734]} zoom={13} style={{ height: 'calc(100vh - 300px)', width: '100%', position: 'relative' }}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -307,6 +343,6 @@ const RestaurantMap = ({ filteredRestaurants }) => {
       </MapContainer>
     </div>
   );
-};
+}  
 
 export default RestaurantMap;

@@ -1,10 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-
 import Filters from '../filters/Filters';
 import RestaurantMap from './RestaurantMap';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '../../styles/customClusterStyles.css';
 
 const RestaurantList = () => {
   const [restaurants, setRestaurants] = useState([]);
@@ -13,7 +10,9 @@ const RestaurantList = () => {
   const [error, setError] = useState(null);
 
   const [selectedBarrio, setSelectedBarrio] = useState('');
-  const [selectedTipo, setSelectedTipo] = useState('');
+  const [selectedCategoriaCocina, setSelectedCategoriaCocina] = useState('');
+  const [selectedNota, setSelectedNota] = useState('');
+  const [selectedCategoriaPrecio, setSelectedCategoriaPrecio] = useState('');
 
   useEffect(() => {
     axios.get('http://127.0.0.1:5000/restaurants')
@@ -27,12 +26,22 @@ const RestaurantList = () => {
       });
   }, []);
 
+  const filterByNota = (restaurant, selectedNota) => {
+    const nota = parseFloat(restaurant.Nota);
+    if (!selectedNota) return true;
+
+    const [min, max] = selectedNota.split('-').map(n => parseFloat(n));
+    return nota >= min && nota <= max;
+  };
+
   const filtered = useMemo(() => {
     return restaurants.filter(restaurant => (
       (selectedBarrio === '' || restaurant.Barrio === selectedBarrio) &&
-      (selectedTipo === '' || restaurant.Tipo === selectedTipo)
+      (selectedCategoriaCocina === '' || restaurant['Categoría Cocina'] === selectedCategoriaCocina) &&
+      (filterByNota(restaurant, selectedNota)) &&
+      (selectedCategoriaPrecio === '' || restaurant['Categoría Precio'] === selectedCategoriaPrecio)
     ));
-  }, [selectedBarrio, selectedTipo, restaurants]);
+  }, [selectedBarrio, selectedCategoriaCocina, selectedNota, selectedCategoriaPrecio, restaurants]);
 
   useEffect(() => {
     setFilteredRestaurants(filtered);
@@ -42,7 +51,8 @@ const RestaurantList = () => {
   if (error) return <p>{error}</p>;
 
   const barrios = [...new Set(restaurants.map(r => r.Barrio))];
-  const tipos = [...new Set(restaurants.map(r => r.Tipo))];
+  const categoriasCocina = [...new Set(restaurants.map(r => r['Categoría Cocina']))];
+  const categoriasPrecio = [...new Set(restaurants.map(r => r['Categoría Precio']))];
 
   return (
     <div className="container">
@@ -53,10 +63,15 @@ const RestaurantList = () => {
       <Filters
         selectedBarrio={selectedBarrio}
         setSelectedBarrio={setSelectedBarrio}
-        selectedTipo={selectedTipo}
-        setSelectedTipo={setSelectedTipo}
+        selectedCategoriaCocina={selectedCategoriaCocina}
+        setSelectedCategoriaCocina={setSelectedCategoriaCocina}
+        selectedNota={selectedNota}
+        setSelectedNota={setSelectedNota}
+        selectedCategoriaPrecio={selectedCategoriaPrecio}
+        setSelectedCategoriaPrecio={setSelectedCategoriaPrecio}
         barrios={barrios}
-        tipos={tipos}
+        categoriasCocina={categoriasCocina}
+        categoriasPrecio={categoriasPrecio}
       />
       <RestaurantMap filteredRestaurants={filteredRestaurants} />
     </div>

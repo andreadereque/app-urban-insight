@@ -23,3 +23,43 @@ code {
   box-shadow: 0 0 15px rgba(255, 105, 180, 0.6);  /* Brillo rosado */
 }
 
+
+.list-group-item:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+/* Estilo general para el contenedor de filtros */
+.filter-container {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* Estilo para los selectores */
+.filter-select {
+  border-radius: 25px;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  color: #4a4a4a;
+  font-size: 14px;
+  transition: box-shadow 0.3s ease;
+  outline: none;
+  width: 150px;  /* Ancho para que todos los selects tengan tamaño uniforme */
+}
+
+/* Estilo cuando se hace focus en un filtro */
+.filter-select:focus {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-color: #ff6f61;
+}
+
+/* Quitar estilo a las etiquetas en el contenedor */
+.filter-wrapper {
+  display: inline-block;
+  background-color: #fff;
+  border-radius: 25px;
+  padding: 5px 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
