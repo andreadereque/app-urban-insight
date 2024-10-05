@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import RestaurantList from './components/restaurants/RestaurantList';  // Restaurant map component
-import NavigationBar from './components/general/Navbar';  // Navbar
+import NavigationBar from './components/Navbar';  // Navbar
 import InteractiveMaps from './components/demographic_map/InteractiveMaps';
 import Idealista from './components/random/NationalityAnalysis';
 

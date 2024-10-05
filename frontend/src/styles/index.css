@@ -1,0 +1,25 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.custom-cluster-icon {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-cluster-icon:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 15px rgba(255, 105, 180, 0.6);  /* Brillo rosado */
+}
+

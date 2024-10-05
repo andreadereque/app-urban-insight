@@ -11,6 +11,13 @@ CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 # Configuración de MongoDB
 app.config["MONGO_URI"] = "mongodb://localhost:27017/urban_insight_data"
 mongo = PyMongo(app)
+transport_collection = mongo.db['transport']  # Nombre de tu colección de transporte
+
+@app.route('/transport', methods=['GET'])
+def get_transport():
+    # Obtener todos los puntos de transporte desde la colección MongoDB
+    transport_data = list(transport_collection.find({}, {'_id': 0}))  # Excluir _id de la respuesta
+    return jsonify(transport_data)
 @app.route('/api/demographics', methods=['GET'])
 @app.route('/api/demographics', methods=['GET'])
 def get_demographics():
