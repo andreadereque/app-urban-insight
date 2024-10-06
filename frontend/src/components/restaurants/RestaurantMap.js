@@ -9,6 +9,7 @@ import NeighborhoodPolygons from './NeighborhoodPolygons';
 import restIconPath from '../../assets/icons/rest_icon.png';
 import busIconPath from '../../assets/icons/bus.png';
 import PopularCategoriesChart from './PopularCategoriesChart';
+import ViabilityIndicatorsChart from './ViabilityIndicatorsChart';
 
 const restaurantIcon = new L.Icon({
   iconUrl: restIconPath,
@@ -56,6 +57,10 @@ const RestaurantMap = ({ filteredRestaurants }) => {
   const [categoryCountsByBarrio, setCategoryCountsByBarrio] = useState({});
   const neighborhoodLayersRef = useRef([]);
   const transportLayersRef = useRef([]);
+  const [showViabilityIndicators, setShowViabilityIndicators] = useState(false);
+  const [viabilityData, setViabilityData] = useState([]);
+
+
 
 
   useEffect(() => {
@@ -135,7 +140,17 @@ const RestaurantMap = ({ filteredRestaurants }) => {
       });
     }
   }, [mapRef, showTransport, transportData, selectedTransportType]);
-
+  useEffect(() => {
+    if (showViabilityIndicators) {
+      axios.get("http://127.0.0.1:5000/api/viability")
+        .then(response => {
+          console.log('***************',response)
+          setViabilityData(response.data);
+        })
+        .catch(error => console.error("Error al cargar los indicadores de viabilidad", error));
+    }
+  }, [showViabilityIndicators]);
+  
   const getColorForRestaurantCount = (count) => {
     return count > 150 ? '#800026' :
            count > 120 ? '#BD0026' :
@@ -281,7 +296,29 @@ const RestaurantMap = ({ filteredRestaurants }) => {
       >
         {showPopularCategories ? 'Ocultar Categorías Populares' : 'Mostrar Categorías Populares'}
       </button>
-  
+      <button
+  onClick={() => setShowViabilityIndicators(!showViabilityIndicators)}
+  style={{
+    marginBottom: '10px',
+    marginLeft: '15px',
+    padding: '10px 20px',
+    backgroundColor: showViabilityIndicators ? '#f5b041' : '#f4d03f',
+    color: '#fff',
+    border: '2px solid #f8c471',
+    borderRadius: '30px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    fontWeight: 'bold',
+    fontSize: '16px',
+  }}
+  onMouseOver={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f7ca79' : '#f5e599'}
+  onMouseOut={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f5b041' : '#f4d03f'}
+>
+  {showViabilityIndicators ? 'Ocultar Indicadores de Viabilidad' : 'Mostrar Indicadores de Viabilidad'}
+</button>
+{showViabilityIndicators && <ViabilityIndicatorsChart viabilityData={viabilityData} />}
+
       {showPopularCategories && <PopularCategoriesChart categoryCountsByBarrio={categoryCountsByBarrio} />}
      
       {showTransport && (
