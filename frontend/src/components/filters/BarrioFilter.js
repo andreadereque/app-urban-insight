@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const BarrioFilter = ({ selectedBarrio, setSelectedBarrio, barrios }) => {
+const BarrioFilter = ({ selectedBarrios, setSelectedBarrios, barrios }) => {
   const [inputValue, setInputValue] = useState('');
   const [filteredBarrios, setFilteredBarrios] = useState([]);
   const dropdownRef = useRef(null);
@@ -10,7 +10,7 @@ const BarrioFilter = ({ selectedBarrio, setSelectedBarrio, barrios }) => {
     setInputValue(value);
 
     if (value === '') {
-      setFilteredBarrios([]); // Si el campo de texto está vacío, ocultamos el desplegable
+      setFilteredBarrios([]);
     } else {
       const filtered = barrios.filter((barrio) =>
         barrio.toLowerCase().includes(value.toLowerCase())
@@ -20,9 +20,15 @@ const BarrioFilter = ({ selectedBarrio, setSelectedBarrio, barrios }) => {
   };
 
   const handleSelectBarrio = (barrio) => {
-    setSelectedBarrio(barrio);
-    setInputValue(barrio);
+    if (!selectedBarrios.includes(barrio)) {
+      setSelectedBarrios([...selectedBarrios, barrio]);
+    }
+    setInputValue('');
     setFilteredBarrios([]);
+  };
+
+  const handleRemoveBarrio = (barrio) => {
+    setSelectedBarrios(selectedBarrios.filter((selected) => selected !== barrio));
   };
 
   useEffect(() => {
@@ -38,7 +44,7 @@ const BarrioFilter = ({ selectedBarrio, setSelectedBarrio, barrios }) => {
   }, []);
 
   return (
-    <div className="col-md-4" ref={dropdownRef} style={{ position: 'relative', width: '200px' }}> {/* Ampliamos el ancho del input */}
+    <div className="col-md-4" ref={dropdownRef} style={{ position: 'relative', width: '200px' }}>
       <input
         type="text"
         className="filter-select"
@@ -46,7 +52,7 @@ const BarrioFilter = ({ selectedBarrio, setSelectedBarrio, barrios }) => {
         onChange={handleInputChange}
         placeholder="Escribe un barrio..."
         style={{
-          width: '100%',  /* El input ocupará el 100% del contenedor */
+          width: '100%',
           borderRadius: '25px',
           padding: '10px 15px',
           border: '1px solid #e0e0e0',
@@ -60,11 +66,11 @@ const BarrioFilter = ({ selectedBarrio, setSelectedBarrio, barrios }) => {
           position: 'absolute',
           top: '100%',
           left: '0',
-          width: '100%',  /* El desplegable tendrá el mismo ancho que el input */
+          width: '100%',
           borderRadius: '10px',
           boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)',
           zIndex: '1000',
-          maxHeight: '200px',  /* Aumentamos la altura del desplegable */
+          maxHeight: '200px',
           overflowY: 'auto',
           marginTop: '5px',
         }}>
@@ -75,19 +81,47 @@ const BarrioFilter = ({ selectedBarrio, setSelectedBarrio, barrios }) => {
               onClick={() => handleSelectBarrio(barrio)}
               style={{
                 cursor: 'pointer',
-                backgroundColor: '#f9f9f9',
+                backgroundColor: selectedBarrios.includes(barrio) ? '#ffedea' : '#f9f9f9',
                 padding: '10px 15px',
                 borderBottom: '1px solid #ececec',
                 transition: 'background-color 0.2s',
               }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#ffedea'}
-              onMouseOut={(e) => e.target.style.backgroundColor = '#f9f9f9'}
             >
               {barrio}
             </li>
           ))}
         </ul>
       )}
+      <div style={{ marginTop: '10px' }}>
+        {selectedBarrios.map((barrio, index) => (
+          <span key={index} style={{
+            display: 'inline-block',
+            backgroundColor: '#ffedea',
+            borderRadius: '15px',
+            padding: '5px 10px',
+            margin: '5px',
+            position: 'relative',
+          }}>
+            {barrio}
+            <button
+              onClick={() => handleRemoveBarrio(barrio)}
+              style={{
+                position: 'absolute',
+                top: '-10px',  // Coloca el botón sobre el contorno
+                right: '-10px',  // Alinea el botón a la derecha
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: '#000000',  // Cambia el color a negro
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '16px',
+              }}
+            >
+              ✕
+            </button>
+          </span>
+        ))}
+      </div>
     </div>
   );
 };

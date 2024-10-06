@@ -3,7 +3,7 @@ import BarrioFilter from './BarrioFilter';
 import CustomFilter from './CustomFilter';
 
 const Filters = ({
-  selectedBarrio, setSelectedBarrio,
+    selectedBarrios, setSelectedBarrios,
   selectedCategoriaCocina, setSelectedCategoriaCocina,
   selectedNota, setSelectedNota,
   selectedCategoriaPrecio, setSelectedCategoriaPrecio,
@@ -11,7 +11,7 @@ const Filters = ({
 }) => (
   <div className="filter-container">
     <div className="filter-wrapper">
-      <BarrioFilter selectedBarrio={selectedBarrio} setSelectedBarrio={setSelectedBarrio} barrios={barrios} />
+    <BarrioFilter selectedBarrios={selectedBarrios} setSelectedBarrios={setSelectedBarrios} barrios={barrios} />
     </div>
     <div className="filter-wrapper">
       <CustomFilter selectedValue={selectedCategoriaCocina} setSelectedValue={setSelectedCategoriaCocina} options={categoriasCocina} placeholder="Tipo de Cocina" />

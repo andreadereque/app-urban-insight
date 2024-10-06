@@ -317,10 +317,17 @@ const RestaurantMap = ({ filteredRestaurants }) => {
       >
         {showViabilityIndicators ? 'Ocultar Indicadores de Viabilidad' : 'Mostrar Indicadores de Viabilidad'}
       </button>
-      <MapContainer ref={mapRef} center={[41.3851, 2.1734]} zoom={13} style={{ height: 'calc(100vh - 300px)', width: '100%', position: 'relative' }}>
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      <MapContainer
+        ref={mapRef}
+        center={[41.3851, 2.1734]}
+        zoom={13}
+        style={{ height: 'calc(100vh - 300px)', width: '100%', position: 'relative' }}
+        minZoom={13}  // Ajusta el valor según lo que desees
+        maxZoom={18}  // Ajusta el valor para evitar hacer zoom demasiado cerca
+        maxBounds={[[41.2, 2.0], [41.5, 2.3]]}  // Define los límites para ver solo Barcelona
+      >        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'"
+          attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
         />
         <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
           <RestaurantMarkers filteredRestaurants={filteredRestaurants} icon={restaurantIcon} />
@@ -355,7 +362,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
             </Polygon>
           )
         ))}
-
+        
         {heatmapActive && <HeatmapLegend />}
       </MapContainer>
       {showViabilityIndicators && <ViabilityIndicatorsChart viabilityData={viabilityData} selectedFilter={filteredRestaurants.length ? filteredRestaurants[0].Barrio : ''} />}

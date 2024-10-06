@@ -9,7 +9,8 @@ const RestaurantList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [selectedBarrio, setSelectedBarrio] = useState('');
+  // Cambiar el estado de selectedBarrio a selectedBarrios
+  const [selectedBarrios, setSelectedBarrios] = useState([]);
   const [selectedCategoriaCocina, setSelectedCategoriaCocina] = useState('');
   const [selectedNota, setSelectedNota] = useState('');
   const [selectedCategoriaPrecio, setSelectedCategoriaPrecio] = useState('');
@@ -34,14 +35,15 @@ const RestaurantList = () => {
     return nota >= min && nota <= max;
   };
 
+  // Actualizar el filtro para usar selectedBarrios
   const filtered = useMemo(() => {
     return restaurants.filter(restaurant => (
-      (selectedBarrio === '' || restaurant.Barrio === selectedBarrio) &&
+      (selectedBarrios.length === 0 || selectedBarrios.includes(restaurant.Barrio)) &&
       (selectedCategoriaCocina === '' || restaurant['Categoría Cocina'] === selectedCategoriaCocina) &&
       (filterByNota(restaurant, selectedNota)) &&
       (selectedCategoriaPrecio === '' || restaurant['Categoría Precio'] === selectedCategoriaPrecio)
     ));
-  }, [selectedBarrio, selectedCategoriaCocina, selectedNota, selectedCategoriaPrecio, restaurants]);
+  }, [selectedBarrios, selectedCategoriaCocina, selectedNota, selectedCategoriaPrecio, restaurants]);
 
   useEffect(() => {
     setFilteredRestaurants(filtered);
@@ -53,12 +55,7 @@ const RestaurantList = () => {
   const barrios = [...new Set(restaurants.map(r => r.Barrio))];
   const categoriasCocina = [...new Set(restaurants.map(r => r['Categoría Cocina']))];
   const categoriasPrecio = [...new Set(restaurants.map(r => r['Categoría Precio']))];
-  if (loading) return (
-    <div className="spinner-container">
-      <div className="spinner"></div>
-      <p>Cargando los datos de los restaurantes...</p>
-    </div>
-  );
+
   return (
     <div className="container">
       <h1 className="my-4">Mapa de Restaurantes</h1>
@@ -66,8 +63,8 @@ const RestaurantList = () => {
         Total de restaurantes: <span className="badge bg-primary">{filteredRestaurants.length}</span>
       </p>
       <Filters
-        selectedBarrio={selectedBarrio}
-        setSelectedBarrio={setSelectedBarrio}
+        selectedBarrios={selectedBarrios}  // Actualizar props para Filters
+        setSelectedBarrios={setSelectedBarrios}
         selectedCategoriaCocina={selectedCategoriaCocina}
         setSelectedCategoriaCocina={setSelectedCategoriaCocina}
         selectedNota={selectedNota}
