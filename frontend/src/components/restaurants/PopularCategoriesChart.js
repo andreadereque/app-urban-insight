@@ -48,10 +48,13 @@ const PopularCategoriesChart = ({ categoryCountsByBarrio }) => {
 
   return (
     <div className="chart-container">
-      <h2>Categoría Más Popular por Barrio</h2>
-      <Bar data={data} options={options} />
+      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Categoría Más Popular por Barrio</h2>
+      <div className="card" style={{ padding: '20px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '10px' }}>
+        <Bar data={data} options={options} />
+      </div>
     </div>
   );
+  
 };
 
 export default PopularCategoriesChart;

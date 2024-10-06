@@ -53,7 +53,12 @@ const RestaurantList = () => {
   const barrios = [...new Set(restaurants.map(r => r.Barrio))];
   const categoriasCocina = [...new Set(restaurants.map(r => r['Categoría Cocina']))];
   const categoriasPrecio = [...new Set(restaurants.map(r => r['Categoría Precio']))];
-
+  if (loading) return (
+    <div className="spinner-container">
+      <div className="spinner"></div>
+      <p>Cargando los datos de los restaurantes...</p>
+    </div>
+  );
   return (
     <div className="container">
       <h1 className="my-4">Mapa de Restaurantes</h1>

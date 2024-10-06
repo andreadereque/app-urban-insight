@@ -144,21 +144,21 @@ const RestaurantMap = ({ filteredRestaurants }) => {
     if (showViabilityIndicators) {
       axios.get("http://127.0.0.1:5000/api/viability")
         .then(response => {
-          console.log('***************',response)
+          console.log('***************', response)
           setViabilityData(response.data);
         })
         .catch(error => console.error("Error al cargar los indicadores de viabilidad", error));
     }
   }, [showViabilityIndicators]);
-  
+
   const getColorForRestaurantCount = (count) => {
     return count > 150 ? '#800026' :
-           count > 120 ? '#BD0026' :
-           count > 90  ? '#E31A1C' :
-           count > 60  ? '#FC4E2A' :
-           count > 30  ? '#FD8D3C' :
-           count > 14  ? '#FEB24C' :
-                         '#FFEDA0';
+      count > 120 ? '#BD0026' :
+        count > 90 ? '#E31A1C' :
+          count > 60 ? '#FC4E2A' :
+            count > 30 ? '#FD8D3C' :
+              count > 14 ? '#FEB24C' :
+                '#FFEDA0';
   };
 
   const getPopularCategoryForBarrio = (barrio) => {
@@ -187,14 +187,14 @@ const RestaurantMap = ({ filteredRestaurants }) => {
       const categoryCounts = filteredRestaurants.reduce((acc, restaurant) => {
         const barrio = restaurant.Barrio; // Aquí tomamos el barrio
         if (!barrio || barrio === "Desconocido") return acc; // Ignorar si el barrio está vacío o es "Desconocido"
-        
+
         const category = restaurant["Tipo"];
         if (!acc[barrio]) acc[barrio] = {};
         if (!acc[barrio][category]) acc[barrio][category] = 0;
         acc[barrio][category] += 1; // Aumentar el conteo de esa categoría en ese barrio
         return acc;
       }, {});
-      
+
       const popularCategories = {};
       for (let barrio in categoryCounts) {
         const sortedCategories = Object.entries(categoryCounts[barrio]).sort((a, b) => b[1] - a[1]);
@@ -203,8 +203,8 @@ const RestaurantMap = ({ filteredRestaurants }) => {
       setCategoryCountsByBarrio(popularCategories);
     }
   }, [showPopularCategories, filteredRestaurants]);
-  
-  
+
+
 
   const togglePopularCategories = () => {
     setShowPopularCategories(!showPopularCategories);
@@ -297,30 +297,70 @@ const RestaurantMap = ({ filteredRestaurants }) => {
         {showPopularCategories ? 'Ocultar Categorías Populares' : 'Mostrar Categorías Populares'}
       </button>
       <button
-  onClick={() => setShowViabilityIndicators(!showViabilityIndicators)}
-  style={{
-    marginBottom: '10px',
-    marginLeft: '15px',
-    padding: '10px 20px',
-    backgroundColor: showViabilityIndicators ? '#f5b041' : '#f4d03f',
-    color: '#fff',
-    border: '2px solid #f8c471',
-    borderRadius: '30px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    fontWeight: 'bold',
-    fontSize: '16px',
-  }}
-  onMouseOver={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f7ca79' : '#f5e599'}
-  onMouseOut={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f5b041' : '#f4d03f'}
->
-  {showViabilityIndicators ? 'Ocultar Indicadores de Viabilidad' : 'Mostrar Indicadores de Viabilidad'}
-</button>
-{showViabilityIndicators && <ViabilityIndicatorsChart viabilityData={viabilityData} />}
+        onClick={() => setShowViabilityIndicators(!showViabilityIndicators)}
+        style={{
+          marginBottom: '10px',
+          marginLeft: '15px',
+          padding: '10px 20px',
+          backgroundColor: showViabilityIndicators ? '#f5b041' : '#f4d03f',
+          color: '#fff',
+          border: '2px solid #f8c471',
+          borderRadius: '30px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          fontWeight: 'bold',
+          fontSize: '16px',
+        }}
+        onMouseOver={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f7ca79' : '#f5e599'}
+        onMouseOut={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f5b041' : '#f4d03f'}
+      >
+        {showViabilityIndicators ? 'Ocultar Indicadores de Viabilidad' : 'Mostrar Indicadores de Viabilidad'}
+      </button>
+      <MapContainer ref={mapRef} center={[41.3851, 2.1734]} zoom={13} style={{ height: 'calc(100vh - 300px)', width: '100%', position: 'relative' }}>
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
+          <RestaurantMarkers filteredRestaurants={filteredRestaurants} icon={restaurantIcon} />
+        </MarkerClusterGroup>
 
+        {showNeighborhoods && (
+          <NeighborhoodPolygons
+            mapRef={mapRef}
+            neighborhoods={neighborhoods}
+            showNeighborhoods={showNeighborhoods}
+            heatmapActive={heatmapActive}
+            restaurantCounts={restaurantCounts}
+            getColorForRestaurantCount={getColorForRestaurantCount}
+            clearLayers={clearLayers}
+          />
+        )}
+
+        {showPopularCategories && neighborhoods.map((neighborhood, index) => (
+          neighborhood.Geometry && neighborhood.Geometry.coordinates && (
+            <Polygon
+              key={index}
+              positions={neighborhood.Geometry.coordinates[0].map(coord => [coord[1], coord[0]])}
+              color="blue"
+              fillOpacity={0.3}
+            >
+              <Popup>
+                <div>
+                  <b>Barrio:</b> {neighborhood.Nombre}<br />
+                  <b>Categoría Popular:</b> {getPopularCategoryForBarrio(neighborhood.Nombre)}
+                </div>
+              </Popup>
+            </Polygon>
+          )
+        ))}
+
+        {heatmapActive && <HeatmapLegend />}
+      </MapContainer>
+      {showViabilityIndicators && <ViabilityIndicatorsChart viabilityData={viabilityData} selectedFilter={filteredRestaurants.length ? filteredRestaurants[0].Barrio : ''} />}
       {showPopularCategories && <PopularCategoriesChart categoryCountsByBarrio={categoryCountsByBarrio} />}
-     
+
       {showTransport && (
         <select
           value={selectedTransportType}
@@ -341,45 +381,9 @@ const RestaurantMap = ({ filteredRestaurants }) => {
           <option value="RENFE">RENFE</option>
         </select>
       )}
-  
-      <MapContainer ref={mapRef} center={[41.3851, 2.1734]} zoom={13} style={{ height: 'calc(100vh - 300px)', width: '100%', position: 'relative' }}>
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
-          <RestaurantMarkers filteredRestaurants={filteredRestaurants} icon={restaurantIcon} />
-        </MarkerClusterGroup>
-        <NeighborhoodPolygons
-          mapRef={mapRef}
-          neighborhoods={neighborhoods}
-          showNeighborhoods={showNeighborhoods}
-          heatmapActive={heatmapActive}
-          restaurantCounts={restaurantCounts}
-          getColorForRestaurantCount={getColorForRestaurantCount}
-          clearLayers={clearLayers}
-        />
-        {showPopularCategories && neighborhoods.map((neighborhood, index) => (
-          neighborhood.Geometry && neighborhood.Geometry.coordinates && (
-            <Polygon
-              key={index}
-              positions={neighborhood.Geometry.coordinates[0].map(coord => [coord[1], coord[0]])}
-              color="blue"
-              fillOpacity={0.3}
-            >
-              <Popup>
-                <div>
-                  <b>Barrio:</b> {neighborhood.Nombre}<br/>
-                  <b>Categoría Popular:</b> {getPopularCategoryForBarrio(neighborhood.Nombre)}
-                </div>
-              </Popup>
-            </Polygon>
-          )
-        ))}
-        {heatmapActive && <HeatmapLegend />}
-      </MapContainer>
+
     </div>
   );
-}  
+}
 
 export default RestaurantMap;
