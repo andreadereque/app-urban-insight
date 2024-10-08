@@ -2,6 +2,25 @@ from flask import Flask, jsonify, render_template, request
 from flask_pymongo import PyMongo
 from flask_cors import CORS  # Asegúrate de que CORS está importado
 from bson import ObjectId  # Importar ObjectId para convertir el _id
+from collections import Counter
+from numpy import histogram
+
+def calculate_histogram(data: list, intervals=None):
+    data = [x for x in data if x is not None]
+    n = len(data)
+    if isinstance(data[0], str):
+        hist = Counter(data)
+        for k in hist.keys():
+            hist[k] = float(hist[k]/n)
+    elif isinstance(data[0], float):
+        if intervals is None:
+            raise ValueError('If the data are numbers you must provide the intervals')
+        hist = histogram(data, bins=intervals)
+        hist_vals = [float(x/n) for x in hist[0]]
+        hist = (hist_vals, hist[1].tolist())
+    else:
+        raise ValueError('Data must be a list of strings or floats')
+    return hist
 
 app = Flask(__name__)
 
@@ -141,8 +160,8 @@ def filter_data():
     })
 
 @app.route('/api/neighbours_competitors')
-def neighbours_competitors(local):
-    coordinates = local.get("Coordinates")  # TODO: Ver que pinta tiene el objeto que se obtiene con el requests
+def neighbours_competitors():
+    coordinates = [2.187171435792019, 41.38187744227097]  # TODO: Ver que pinta tiene el objeto que se obtiene con el requests
     query_pipeline = [
         {
             "$geoNear": {
@@ -150,7 +169,6 @@ def neighbours_competitors(local):
                 "distanceField": "distancia",  # Campo donde se almacenará la distancia
                 "maxDistance": 500,  # Distancia máxima en metros
                 "spherical": True,  # Cálculo esférico de la distancia
-                "query": {},  # Si quisieras añadir más filtros
             }
         },
         {
@@ -159,13 +177,33 @@ def neighbours_competitors(local):
                 "Categoría Cocina": 1,
                 "Nota": 1,
                 "Categoría Precio": 1,
-                "Nombre": 1,
                 "Accesibilidad": 1
                 }
+        },
+        {
+            "$group": {
+                "_id": None, 
+                "categoría_cocina": { "$push": "$Categoría Cocina" },
+                "notas": { "$push": "$Nota" },
+                "categoría_precio": { "$push": "$Categoría Precio" },
+                "accesibilidad": { "$push": "$Accesibilidad" }
+            }
         }
     ]
-    results = list(mongo.db.aggregate(query_pipeline))
+    restaurant_data = list(mongo.db.restaurants.aggregate(query_pipeline))[0]
+    number_of_restaurants = len(restaurant_data.get("notas"))
+    category_histogram = calculate_histogram(restaurant_data.get("categoría_cocina"))
+    price_histogram = calculate_histogram(restaurant_data.get("categoría_precio"))
+    mark_histogram = calculate_histogram(restaurant_data.get("notas"), intervals=[x * 0.5 for x in range(11)])
+    accessibility_histogram = calculate_histogram(restaurant_data.get("accesibilidad"), intervals=[x for x in range(11)])
 
+    return jsonify({
+        "Categoria Cocina": category_histogram,
+        "Numero de restaurantes": number_of_restaurants,
+        "Precio": price_histogram,
+        "Nota": mark_histogram,
+        "Accesibilidad": accessibility_histogram
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
