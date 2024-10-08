@@ -18,7 +18,8 @@ def get_transport():
     # Obtener todos los puntos de transporte desde la colección MongoDB
     transport_data = list(transport_collection.find({}, {'_id': 0}))  # Excluir _id de la respuesta
     return jsonify(transport_data)
-@app.route('/api/demographics', methods=['GET'])
+
+@app.route('/api/demographics', methods=['GET'])  # TODO: mirar si se tiene que quitar esta linea repetida
 @app.route('/api/demographics', methods=['GET'])
 def get_demographics():
     try:
@@ -75,6 +76,7 @@ def get_restaurants():
         })
 
     return jsonify(response)
+
 @app.route('/api/map_data', methods=['GET'])
 def get_map_data():
     try:
@@ -113,9 +115,11 @@ def get_map_data():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 @app.route('/interactive-maps')
 def interactive_maps():
     return render_template('interactive_map.html')
+
 @app.route('/api/get_data')
 def get_data():
     population_data = list(mongo.db.demographic_info.find())
@@ -135,5 +139,33 @@ def filter_data():
         "population": filtered_population,
         "restaurants": filtered_restaurants
     })
+
+@app.route('/api/neighbours_competitors')
+def neighbours_competitors(local):
+    coordinates = local.get("Coordinates")  # TODO: Ver que pinta tiene el objeto que se obtiene con el requests
+    query_pipeline = [
+        {
+            "$geoNear": {
+                "near": {"type": "Point", "coordinates": coordinates},
+                "distanceField": "distancia",  # Campo donde se almacenará la distancia
+                "maxDistance": 500,  # Distancia máxima en metros
+                "spherical": True,  # Cálculo esférico de la distancia
+                "query": {},  # Si quisieras añadir más filtros
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "Categoría Cocina": 1,
+                "Nota": 1,
+                "Categoría Precio": 1,
+                "Nombre": 1,
+                "Accesibilidad": 1
+                }
+        }
+    ]
+    results = list(mongo.db.aggregate(query_pipeline))
+
+
 if __name__ == '__main__':
     app.run(debug=True)
