@@ -238,5 +238,16 @@ def get_viability_score():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/api/restaurant_types', methods=['GET'])
+def get_restaurant_types():
+    try:
+        # Query MongoDB to get distinct restaurant types from the 'Categoría Cocina' field
+        restaurant_types = mongo.db.restaurants.distinct("Categoría Cocina")
+        
+        return jsonify({"types": restaurant_types}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 if __name__ == '__main__':
     app.run(debug=True)

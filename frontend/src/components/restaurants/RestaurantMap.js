@@ -10,6 +10,9 @@ import restIconPath from '../../assets/icons/rest_icon.png';
 import busIconPath from '../../assets/icons/bus.png';
 import PopularCategoriesChart from './PopularCategoriesChart';
 import ViabilityIndicatorsChart from './ViabilityIndicatorsChart';
+import CuisineSelector from './CuisineSelector';
+import HeatmapByCuisine from './HeatmapByCuisine';
+import HeatmapChart from './HeatmapByCuisine';
 
 const restaurantIcon = new L.Icon({
   iconUrl: restIconPath,
@@ -59,6 +62,18 @@ const RestaurantMap = ({ filteredRestaurants }) => {
   const transportLayersRef = useRef([]);
   const [showViabilityIndicators, setShowViabilityIndicators] = useState(false);
   const [viabilityData, setViabilityData] = useState([]);
+  const [selectedCuisine, setSelectedCuisine] = useState('');
+  const [filteredByCuisine, setFilteredByCuisine] = useState(filteredRestaurants);
+
+  useEffect(() => {
+    if (selectedCuisine) {
+      setFilteredByCuisine(
+        filteredRestaurants.filter((restaurant) => restaurant["Categoría Cocina"] === selectedCuisine)
+      );
+    } else {
+      setFilteredByCuisine(filteredRestaurants);  // Show all if no cuisine is selected
+    }
+  }, [selectedCuisine, filteredRestaurants]);
 
 
 
@@ -204,6 +219,15 @@ const RestaurantMap = ({ filteredRestaurants }) => {
     }
   }, [showPopularCategories, filteredRestaurants]);
 
+  useEffect(() => {
+    if (selectedCuisine) {
+      setFilteredByCuisine(
+        filteredRestaurants.filter((restaurant) => restaurant["Categoría Cocina"] === selectedCuisine)
+      );
+    } else {
+      setFilteredByCuisine(filteredRestaurants);  // If no filter, show all
+    }
+  }, [selectedCuisine, filteredRestaurants]);
 
 
   const togglePopularCategories = () => {
@@ -213,182 +237,198 @@ const RestaurantMap = ({ filteredRestaurants }) => {
 
   return (
     <div>
-      <button
-        onClick={() => setShowNeighborhoods(!showNeighborhoods)}
-        style={{
-          marginBottom: '10px',
-          padding: '10px 20px',
-          backgroundColor: showNeighborhoods ? '#f7c5cc' : '#e4a0b3',
-          color: '#fff',
-          border: '2px solid #f3b2c0',
-          borderRadius: '30px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          fontWeight: 'bold',
-          fontSize: '16px',
-        }}
-        onMouseOver={(e) => e.target.style.backgroundColor = showNeighborhoods ? '#f9dfe2' : '#f4b6c2'}
-        onMouseOut={(e) => e.target.style.backgroundColor = showNeighborhoods ? '#f7c5cc' : '#e4a0b3'}
-      >
-        {showNeighborhoods ? 'Ocultar Barrios' : 'Mostrar Barrios'}
-      </button>
-      <button
-        onClick={() => setHeatmapActive(!heatmapActive)}
-        style={{
-          marginBottom: '10px',
-          marginLeft: '15px',
-          padding: '10px 20px',
-          backgroundColor: heatmapActive ? '#ffccac' : '#ffb07c',
-          color: '#fff',
-          border: '2px solid #ffc3a1',
-          borderRadius: '30px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          fontWeight: 'bold',
-          fontSize: '16px',
-        }}
-        onMouseOver={(e) => e.target.style.backgroundColor = heatmapActive ? '#ffe0d0' : '#ffc49b'}
-        onMouseOut={(e) => e.target.style.backgroundColor = heatmapActive ? '#ffccac' : '#ffb07c'}
-      >
-        {heatmapActive ? 'Desactivar Heatmap' : 'Activar Heatmap'}
-      </button>
-      <button
-        onClick={() => setShowTransport(!showTransport)}
-        style={{
-          marginBottom: '10px',
-          marginLeft: '15px',
-          padding: '10px 20px',
-          backgroundColor: showTransport ? '#d0e6a5' : '#b5e48c',
-          color: '#fff',
-          border: '2px solid #c4e69e',
-          borderRadius: '30px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          fontWeight: 'bold',
-          fontSize: '16px',
-        }}
-        onMouseOver={(e) => e.target.style.backgroundColor = showTransport ? '#e0f0c4' : '#c9eab3'}
-        onMouseOut={(e) => e.target.style.backgroundColor = showTransport ? '#d0e6a5' : '#b5e48c'}
-      >
-        {showTransport ? 'Ocultar Transporte' : 'Mostrar Transporte'}
-      </button>
-      <button
-        onClick={() => setShowPopularCategories(!showPopularCategories)}
-        style={{
-          marginBottom: '10px',
-          marginLeft: '15px',
-          padding: '10px 20px',
-          backgroundColor: showPopularCategories ? '#c5cae9' : '#7986cb',
-          color: '#fff',
-          border: '2px solid #9fa8da',
-          borderRadius: '30px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          fontWeight: 'bold',
-          fontSize: '16px',
-        }}
-        onMouseOver={(e) => e.target.style.backgroundColor = showPopularCategories ? '#d1d9ff' : '#9fa8da'}
-        onMouseOut={(e) => e.target.style.backgroundColor = showPopularCategories ? '#c5cae9' : '#7986cb'}
-      >
-        {showPopularCategories ? 'Ocultar Categorías Populares' : 'Mostrar Categorías Populares'}
-      </button>
-      <button
-        onClick={() => setShowViabilityIndicators(!showViabilityIndicators)}
-        style={{
-          marginBottom: '10px',
-          marginLeft: '15px',
-          padding: '10px 20px',
-          backgroundColor: showViabilityIndicators ? '#f5b041' : '#f4d03f',
-          color: '#fff',
-          border: '2px solid #f8c471',
-          borderRadius: '30px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          fontWeight: 'bold',
-          fontSize: '16px',
-        }}
-        onMouseOver={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f7ca79' : '#f5e599'}
-        onMouseOut={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f5b041' : '#f4d03f'}
-      >
-        {showViabilityIndicators ? 'Ocultar Indicadores de Viabilidad' : 'Mostrar Indicadores de Viabilidad'}
-      </button>
-      <MapContainer
-        ref={mapRef}
-        center={[41.3851, 2.1734]}
-        zoom={13}
-        style={{ height: 'calc(100vh - 300px)', width: '100%', position: 'relative' }}
-        minZoom={13}  // Ajusta el valor según lo que desees
-        maxZoom={18}  // Ajusta el valor para evitar hacer zoom demasiado cerca
-        maxBounds={[[41.2, 2.0], [41.5, 2.3]]}  // Define los límites para ver solo Barcelona
-      >        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'"
-          attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
-        />
-        <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
-          <RestaurantMarkers filteredRestaurants={filteredRestaurants} icon={restaurantIcon} />
-        </MarkerClusterGroup>
-
-        {showNeighborhoods && (
-          <NeighborhoodPolygons
-            mapRef={mapRef}
-            neighborhoods={neighborhoods}
-            showNeighborhoods={showNeighborhoods}
-            heatmapActive={heatmapActive}
-            restaurantCounts={restaurantCounts}
-            getColorForRestaurantCount={getColorForRestaurantCount}
-            clearLayers={clearLayers}
-          />
-        )}
-
-        {showPopularCategories && neighborhoods.map((neighborhood, index) => (
-          neighborhood.Geometry && neighborhood.Geometry.coordinates && (
-            <Polygon
-              key={index}
-              positions={neighborhood.Geometry.coordinates[0].map(coord => [coord[1], coord[0]])}
-              color="blue"
-              fillOpacity={0.3}
-            >
-              <Popup>
-                <div>
-                  <b>Barrio:</b> {neighborhood.Nombre}<br />
-                  <b>Categoría Popular:</b> {getPopularCategoryForBarrio(neighborhood.Nombre)}
-                </div>
-              </Popup>
-            </Polygon>
-          )
-        ))}
-        
-        {heatmapActive && <HeatmapLegend />}
-      </MapContainer>
-      {showViabilityIndicators && <ViabilityIndicatorsChart viabilityData={viabilityData} selectedFilter={filteredRestaurants.length ? filteredRestaurants[0].Barrio : ''} />}
-      {showPopularCategories && <PopularCategoriesChart categoryCountsByBarrio={categoryCountsByBarrio} />}
-
-      {showTransport && (
-        <select
-          value={selectedTransportType}
-          onChange={(e) => setSelectedTransportType(e.target.value)}
+      <div>
+        <button
+          onClick={() => setShowNeighborhoods(!showNeighborhoods)}
+          style={{
+            marginBottom: '10px',
+            padding: '10px 20px',
+            backgroundColor: showNeighborhoods ? '#f7c5cc' : '#e4a0b3',
+            color: '#fff',
+            border: '2px solid #f3b2c0',
+            borderRadius: '30px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            fontWeight: 'bold',
+            fontSize: '16px',
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = showNeighborhoods ? '#f9dfe2' : '#f4b6c2'}
+          onMouseOut={(e) => e.target.style.backgroundColor = showNeighborhoods ? '#f7c5cc' : '#e4a0b3'}
+        >
+          {showNeighborhoods ? 'Ocultar Barrios' : 'Mostrar Barrios'}
+        </button>
+        <button
+          onClick={() => setHeatmapActive(!heatmapActive)}
           style={{
             marginBottom: '10px',
             marginLeft: '15px',
-            padding: '10px',
-            borderRadius: '10px',
-            border: '1px solid #ccc',
+            padding: '10px 20px',
+            backgroundColor: heatmapActive ? '#ffccac' : '#ffb07c',
+            color: '#fff',
+            border: '2px solid #ffc3a1',
+            borderRadius: '30px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            fontWeight: 'bold',
             fontSize: '16px',
           }}
+          onMouseOver={(e) => e.target.style.backgroundColor = heatmapActive ? '#ffe0d0' : '#ffc49b'}
+          onMouseOut={(e) => e.target.style.backgroundColor = heatmapActive ? '#ffccac' : '#ffb07c'}
         >
-          <option value="">Todos los transportes</option>
-          <option value="BUS">BUS</option>
-          <option value="METRO">METRO</option>
-          <option value="FGC">FGC</option>
-          <option value="RENFE">RENFE</option>
-        </select>
-      )}
+          {heatmapActive ? 'Desactivar Heatmap' : 'Activar Heatmap'}
+        </button>
+        <button
+          onClick={() => setShowTransport(!showTransport)}
+          style={{
+            marginBottom: '10px',
+            marginLeft: '15px',
+            padding: '10px 20px',
+            backgroundColor: showTransport ? '#d0e6a5' : '#b5e48c',
+            color: '#fff',
+            border: '2px solid #c4e69e',
+            borderRadius: '30px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            fontWeight: 'bold',
+            fontSize: '16px',
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = showTransport ? '#e0f0c4' : '#c9eab3'}
+          onMouseOut={(e) => e.target.style.backgroundColor = showTransport ? '#d0e6a5' : '#b5e48c'}
+        >
+          {showTransport ? 'Ocultar Transporte' : 'Mostrar Transporte'}
+        </button>
+        <button
+          onClick={() => setShowPopularCategories(!showPopularCategories)}
+          style={{
+            marginBottom: '10px',
+            marginLeft: '15px',
+            padding: '10px 20px',
+            backgroundColor: showPopularCategories ? '#c5cae9' : '#7986cb',
+            color: '#fff',
+            border: '2px solid #9fa8da',
+            borderRadius: '30px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            fontWeight: 'bold',
+            fontSize: '16px',
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = showPopularCategories ? '#d1d9ff' : '#9fa8da'}
+          onMouseOut={(e) => e.target.style.backgroundColor = showPopularCategories ? '#c5cae9' : '#7986cb'}
+        >
+          {showPopularCategories ? 'Ocultar Categorías Populares' : 'Mostrar Categorías Populares'}
+        </button>
+        <button
+          onClick={() => setShowViabilityIndicators(!showViabilityIndicators)}
+          style={{
+            marginBottom: '10px',
+            marginLeft: '15px',
+            padding: '10px 20px',
+            backgroundColor: showViabilityIndicators ? '#f5b041' : '#f4d03f',
+            color: '#fff',
+            border: '2px solid #f8c471',
+            borderRadius: '30px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            fontWeight: 'bold',
+            fontSize: '16px',
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f7ca79' : '#f5e599'}
+          onMouseOut={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f5b041' : '#f4d03f'}
+        >
+          {showViabilityIndicators ? 'Ocultar Indicadores de Viabilidad' : 'Mostrar Indicadores de Viabilidad'}
+        </button>
+        <MapContainer
+          ref={mapRef}
+          center={[41.3851, 2.1734]}
+          zoom={13}
+          style={{ height: 'calc(100vh - 300px)', width: '100%', position: 'relative' }}
+          minZoom={13}  // Ajusta el valor según lo que desees
+          maxZoom={18}  // Ajusta el valor para evitar hacer zoom demasiado cerca
+          maxBounds={[[41.2, 2.0], [41.5, 2.3]]}  // Define los límites para ver solo Barcelona
+        >        <TileLayer
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'"
+            attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
+          />
+          <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
+            <RestaurantMarkers filteredRestaurants={filteredRestaurants} icon={restaurantIcon} />
+          </MarkerClusterGroup>
 
+          {showNeighborhoods && (
+            <NeighborhoodPolygons
+              mapRef={mapRef}
+              neighborhoods={neighborhoods}
+              showNeighborhoods={showNeighborhoods}
+              heatmapActive={heatmapActive}
+              restaurantCounts={restaurantCounts}
+              getColorForRestaurantCount={getColorForRestaurantCount}
+              clearLayers={clearLayers}
+            />
+          )}
+
+          {showPopularCategories && neighborhoods.map((neighborhood, index) => (
+            neighborhood.Geometry && neighborhood.Geometry.coordinates && (
+              <Polygon
+                key={index}
+                positions={neighborhood.Geometry.coordinates[0].map(coord => [coord[1], coord[0]])}
+                color="blue"
+                fillOpacity={0.3}
+              >
+                <Popup>
+                  <div>
+                    <b>Barrio:</b> {neighborhood.Nombre}<br />
+                    <b>Categoría Popular:</b> {getPopularCategoryForBarrio(neighborhood.Nombre)}
+                  </div>
+                </Popup>
+              </Polygon>
+            )
+          ))}
+
+          {heatmapActive && <HeatmapLegend />}
+          <CuisineSelector selectedCuisine={selectedCuisine} setSelectedCuisine={setSelectedCuisine} />
+          <HeatmapByCuisine filteredRestaurants={filteredByCuisine} neighborhoods={neighborhoods} />
+        </MapContainer>
+        {showViabilityIndicators && <ViabilityIndicatorsChart viabilityData={viabilityData} selectedFilter={filteredRestaurants.length ? filteredRestaurants[0].Barrio : ''} />}
+        {showPopularCategories && <PopularCategoriesChart categoryCountsByBarrio={categoryCountsByBarrio} />}
+
+        {showTransport && (
+          <select
+            value={selectedTransportType}
+            onChange={(e) => setSelectedTransportType(e.target.value)}
+            style={{
+              marginBottom: '10px',
+              marginLeft: '15px',
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+              fontSize: '16px',
+            }}
+          >
+            <option value="">Todos los transportes</option>
+            <option value="BUS">BUS</option>
+            <option value="METRO">METRO</option>
+            <option value="FGC">FGC</option>
+            <option value="RENFE">RENFE</option>
+          </select>
+        )}
+
+
+      </div>
+
+
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', width: '100%' }}>
+        <div>
+          <CuisineSelector selectedCuisine={selectedCuisine} setSelectedCuisine={setSelectedCuisine} />
+
+        </div>
+        <p></p>
+
+        <HeatmapByCuisine filteredRestaurants={filteredByCuisine} neighborhoods={neighborhoods} />
+      </div>
     </div>
   );
 }
