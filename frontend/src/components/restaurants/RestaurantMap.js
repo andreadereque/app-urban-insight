@@ -237,6 +237,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
 
   return (
     <div>
+      {/* Botones de control para el mapa y las capas */}
       <div>
         <button
           onClick={() => setShowNeighborhoods(!showNeighborhoods)}
@@ -258,6 +259,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
         >
           {showNeighborhoods ? 'Ocultar Barrios' : 'Mostrar Barrios'}
         </button>
+  
         <button
           onClick={() => setHeatmapActive(!heatmapActive)}
           style={{
@@ -279,6 +281,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
         >
           {heatmapActive ? 'Desactivar Heatmap' : 'Activar Heatmap'}
         </button>
+  
         <button
           onClick={() => setShowTransport(!showTransport)}
           style={{
@@ -300,6 +303,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
         >
           {showTransport ? 'Ocultar Transporte' : 'Mostrar Transporte'}
         </button>
+  
         <button
           onClick={() => setShowPopularCategories(!showPopularCategories)}
           style={{
@@ -321,6 +325,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
         >
           {showPopularCategories ? 'Ocultar Categorías Populares' : 'Mostrar Categorías Populares'}
         </button>
+  
         <button
           onClick={() => setShowViabilityIndicators(!showViabilityIndicators)}
           style={{
@@ -342,22 +347,28 @@ const RestaurantMap = ({ filteredRestaurants }) => {
         >
           {showViabilityIndicators ? 'Ocultar Indicadores de Viabilidad' : 'Mostrar Indicadores de Viabilidad'}
         </button>
+      </div>
+  
+      {/* Contenedor para el mapa */}
+      <div style={{ height: '800px', width: '100%' }}>  {/* Limitamos la altura del mapa */}
         <MapContainer
           ref={mapRef}
           center={[41.3851, 2.1734]}
           zoom={13}
-          style={{ height: 'calc(100vh - 300px)', width: '100%', position: 'relative' }}
-          minZoom={13}  // Ajusta el valor según lo que desees
-          maxZoom={18}  // Ajusta el valor para evitar hacer zoom demasiado cerca
-          maxBounds={[[41.2, 2.0], [41.5, 2.3]]}  // Define los límites para ver solo Barcelona
-        >        <TileLayer
+          style={{ height: '100%', width: '100%' }}  
+          minZoom={13}
+          maxZoom={18}
+          maxBounds={[[41.2, 2.0], [41.5, 2.3]]}  // Límite para Barcelona
+        >
+          <TileLayer
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'"
             attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
           />
           <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
             <RestaurantMarkers filteredRestaurants={filteredRestaurants} icon={restaurantIcon} />
           </MarkerClusterGroup>
-
+  
+          {/* Mostrar los barrios con polígonos */}
           {showNeighborhoods && (
             <NeighborhoodPolygons
               mapRef={mapRef}
@@ -369,7 +380,8 @@ const RestaurantMap = ({ filteredRestaurants }) => {
               clearLayers={clearLayers}
             />
           )}
-
+  
+          {/* Mostrar las categorías populares en los barrios */}
           {showPopularCategories && neighborhoods.map((neighborhood, index) => (
             neighborhood.Geometry && neighborhood.Geometry.coordinates && (
               <Polygon
@@ -387,50 +399,50 @@ const RestaurantMap = ({ filteredRestaurants }) => {
               </Polygon>
             )
           ))}
-
+  
+          {/* Leyenda del heatmap */}
           {heatmapActive && <HeatmapLegend />}
-          <CuisineSelector selectedCuisine={selectedCuisine} setSelectedCuisine={setSelectedCuisine} />
-          <HeatmapByCuisine filteredRestaurants={filteredByCuisine} neighborhoods={neighborhoods} />
+  
+         
         </MapContainer>
-        {showViabilityIndicators && <ViabilityIndicatorsChart viabilityData={viabilityData} selectedFilter={filteredRestaurants.length ? filteredRestaurants[0].Barrio : ''} />}
-        {showPopularCategories && <PopularCategoriesChart categoryCountsByBarrio={categoryCountsByBarrio} />}
-
-        {showTransport && (
-          <select
-            value={selectedTransportType}
-            onChange={(e) => setSelectedTransportType(e.target.value)}
-            style={{
-              marginBottom: '10px',
-              marginLeft: '15px',
-              padding: '10px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              fontSize: '16px',
-            }}
-          >
-            <option value="">Todos los transportes</option>
-            <option value="BUS">BUS</option>
-            <option value="METRO">METRO</option>
-            <option value="FGC">FGC</option>
-            <option value="RENFE">RENFE</option>
-          </select>
-        )}
-
-
       </div>
-
-
+  
+      {/* Gráfico de Heatmap por tipo de cocina - Debajo del mapa */}
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', width: '100%' }}>
-        <div>
-          <CuisineSelector selectedCuisine={selectedCuisine} setSelectedCuisine={setSelectedCuisine} />
-
-        </div>
-        <p></p>
-
         <HeatmapByCuisine filteredRestaurants={filteredByCuisine} neighborhoods={neighborhoods} />
       </div>
+  
+      {/* Indicadores de viabilidad */}
+      {showViabilityIndicators && <ViabilityIndicatorsChart viabilityData={viabilityData} selectedFilter={filteredRestaurants.length ? filteredRestaurants[0].Barrio : ''} />}
+  
+      {/* Categorías populares */}
+      {showPopularCategories && <PopularCategoriesChart categoryCountsByBarrio={categoryCountsByBarrio} />}
+  
+      {/* Select de transporte */}
+      {showTransport && (
+        <select
+          value={selectedTransportType}
+          onChange={(e) => setSelectedTransportType(e.target.value)}
+          style={{
+            marginBottom: '10px',
+            marginLeft: '15px',
+            padding: '10px',
+            borderRadius: '10px',
+            border: '1px solid #ccc',
+            fontSize: '16px',
+          }}
+        >
+          <option value="">Todos los transportes</option>
+          <option value="BUS">BUS</option>
+          <option value="METRO">METRO</option>
+          <option value="FGC">FGC</option>
+          <option value="RENFE">RENFE</option>
+        </select>
+      )}
     </div>
   );
+  
+  
 }
 
 export default RestaurantMap;
