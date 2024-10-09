@@ -24,6 +24,91 @@ demographics_collection = mongo.db['demographic_info']
 restaurants_collection = mongo.db['restaurants']
 empty_locals_collection = mongo.db['empty_locals']
 
+import math
+
+import math
+
+import math
+import logging
+
+# Función para verificar si una coordenada es válida
+def is_valid_coordinate(coord):
+    try:
+        return isinstance(coord, (int, float)) and not math.isnan(coord)
+    except TypeError:
+        return False
+
+import math
+import logging
+
+# Función para verificar si un valor es válido (no NaN)
+def is_valid_value(value):
+    try:
+        return not math.isnan(value) if isinstance(value, float) else True
+    except TypeError:
+        return False
+
+@app.route('/api/empty_locals', methods=['GET'])
+def get_empty_locals():
+    empty_locals = empty_locals_collection.find({}, {
+        '_id': 0,
+        'Título': 1,
+        'Dirección completa': 1,
+        'Precio': 1,
+        'itemdetail': 1,
+        'itemdetail2': 1,
+        'itemdetail3': 1,
+        'Barrio': 1,
+        'Geometry.coordinates': 1
+    })
+
+    locals_list = []
+
+    for local in empty_locals:
+        direccion = local.get("Dirección completa")
+        coordenadas = local.get("Geometry", {}).get("coordinates", [])
+        titulo = local.get("Título")
+        precio = local.get("Precio")
+        itemdetail = local.get("itemdetail")
+        itemdetail2 = local.get("itemdetail2")
+        itemdetail3 = local.get("itemdetail3")
+        barrio = local.get("Barrio")
+
+        # Verificar si la dirección es válida
+        if not direccion or direccion.strip() == "":
+            continue
+
+        # Verificar si las coordenadas son válidas
+        if not coordenadas or len(coordenadas) != 2 or not all(is_valid_value(coord) for coord in coordenadas):
+            continue
+
+        # Verificar que el título, precio y otros detalles no sean nulos o vacíos
+        if not titulo or not precio or not itemdetail:
+            continue
+
+        # Verificar si el barrio es un valor válido
+        if not is_valid_value(barrio):
+            continue
+
+        # Si pasa las verificaciones, añadir el local a la lista
+        locals_list.append({
+            "Título": titulo,
+            "Dirección completa": direccion,
+            "Precio": precio,
+            "Itemdetail": itemdetail,
+            "Itemdetail2": itemdetail2,
+            "Itemdetail3": itemdetail3,
+            "Barrio": barrio,
+            "Coordinates": coordenadas
+        })
+
+    # Logging para depuración
+    logging.info(f"Total de locales válidos: {len(locals_list)}")
+
+    return jsonify(locals_list)
+
+
+
 
 # Ruta: Obtener datos de transporte
 @app.route('/transport', methods=['GET'])

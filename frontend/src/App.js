@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import RestaurantList from './components/restaurants/RestaurantList';  // Restaurant map component
 import NavigationBar from './components/Navbar';  // Navbar
 import InteractiveMaps from './components/demographic_map/InteractiveMaps';
-import Idealista from './components/random/NationalityAnalysis';
+import EmptyLocalsMap from './components/random/EmptyLocalMap';
 
 function App() {
   return (
@@ -14,7 +14,7 @@ function App() {
         <div className="container mt-4">
           <Routes>
             <Route path="/" element={<RestaurantList />} />  {/* Default route */}
-            <Route path="/idealista" element={<Idealista />} />  {/* Dashboard route */}
+            <Route path="/idealista" element={<EmptyLocalsMap />} />  {/* Dashboard route */}
             <Route path="/interactive-maps" element={<InteractiveMaps />} />  {/* Dashboard route */}
 
           </Routes>
