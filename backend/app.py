@@ -48,6 +48,9 @@ def is_valid_value(value):
     except TypeError:
         return False
 
+def is_valid_value(value):
+    return value is not None and value != '' and not (isinstance(value, float) and value != value)  # Check for NaN
+
 @app.route('/api/empty_locals', methods=['GET'])
 def get_empty_locals():
     empty_locals = empty_locals_collection.find({}, {
@@ -82,8 +85,13 @@ def get_empty_locals():
         if not coordenadas or len(coordenadas) != 2 or not all(is_valid_value(coord) for coord in coordenadas):
             continue
 
-        # Verificar que el título, precio y otros detalles no sean nulos o vacíos
-        if not titulo or not precio or not itemdetail:
+        # Verificar que el título y otros detalles no sean nulos o vacíos
+        if not titulo or not itemdetail:
+            continue
+
+        # Preprocesar el precio para convertirlo a un número
+        precio_num = preprocess_price(precio)
+        if precio_num is None:  # Filtrar locales con precios no válidos
             continue
 
         # Verificar si el barrio es un valor válido
@@ -94,7 +102,7 @@ def get_empty_locals():
         locals_list.append({
             "Título": titulo,
             "Dirección completa": direccion,
-            "Precio": precio,
+            "Precio": precio_num,  # Usar el precio ya convertido
             "Itemdetail": itemdetail,
             "Itemdetail2": itemdetail2,
             "Itemdetail3": itemdetail3,
@@ -106,6 +114,17 @@ def get_empty_locals():
     logging.info(f"Total de locales válidos: {len(locals_list)}")
 
     return jsonify(locals_list)
+
+def preprocess_price(price_string):
+    """Preprocesar el precio para convertirlo a un número"""
+    if not price_string:
+        return None
+    try:
+        # Remover caracteres que no son parte del número
+        clean_string = price_string.replace('€', '').replace('/mes', '').replace('.', '').replace(',', '.').strip()
+        return float(clean_string)
+    except ValueError:
+        return None
 
 
 
