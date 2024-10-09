@@ -1,41 +1,81 @@
-// EmptyLocalsMap.js
 import React, { useEffect, useState } from 'react';
-import { MapContainer } from 'react-leaflet';
+import { MapContainer, Marker, Popup } from 'react-leaflet';
 import MarkerClusterGroup from '@changey/react-leaflet-markercluster';
 import EmptyLocalMarkers from './EmptyLocalMarkers';
 import EmptyLocalFilters from './EmptyLocalFilters';
 import MapController from './MapController';
 import L from 'leaflet';
 import idealistaIconPath from '../../assets/icons/ide.png';
-import '../../styles/EmptyLocalMaps.css'
+import restaurantIconPath from '../../assets/icons/rest_icon.png';
+import '../../styles/EmptyLocalFilters.css'; // Asegúrate de tener este archivo CSS
+import '../../styles/EmptyLocalMaps.css'; // Asegúrate de tener este archivo CSS
+
+
+// Función para crear iconos personalizados para los clústeres
+const createClusterCustomIcon = (cluster) => {
+  const count = cluster.getChildCount();
+
+  let size = 'large';
+  let dimension = 50; // Tamaño base
+
+  if (count < 10) {
+    size = 'small';
+    dimension = 25;
+  } else if (count >= 10 && count < 50) {
+    size = 'medium';
+    dimension = 35;
+  }
+
+  return new L.DivIcon({
+    html: `<div class="cluster-icon-wrapper ${size}">
+             <span class="cluster-icon">${count}</span>
+           </div>`,
+    className: 'custom-cluster', // Clase personalizada (opcional)
+    iconSize: L.point(dimension, dimension, true),
+  });
+};
+
+
+
+
 
 const EmptyLocalsMap = () => {
   const [locals, setLocals] = useState([]);
   const [neighborhoods, setNeighborhoods] = useState([]);
   const [filters, setFilters] = useState({ barrio: '', precioMin: '', precioMax: '' });
+  const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
 
-  const icon = new L.Icon({
+  const emptyLocalIcon = new L.Icon({
     iconUrl: idealistaIconPath,
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
   });
 
-  // Fetch data from backend
-  useEffect(() => {
-    fetch('http://127.0.0.1:5000/api/empty_locals')
-      .then((response) => response.json())
-      .then((data) => {
-        setLocals(data);
-      })
-      .catch((error) => console.error('Error fetching empty locals:', error));
+  const restaurantIcon = new L.Icon({
+    iconUrl: restaurantIconPath,
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24],
+  });
 
-    fetch('http://127.0.0.1:5000/api/demographics')
-      .then((response) => response.json())
-      .then((data) => {
-        setNeighborhoods(data);
-      })
-      .catch((error) => console.error('Error fetching demographics:', error));
+  useEffect(() => {
+    // Cargar locales vacíos y datos de demografía
+    const fetchData = async () => {
+      try {
+        const localsResponse = await fetch('http://127.0.0.1:5000/api/empty_locals');
+        const localsData = await localsResponse.json();
+        setLocals(localsData);
+
+        const demographicsResponse = await fetch('http://127.0.0.1:5000/api/demographics');
+        const demographicsData = await demographicsResponse.json();
+        setNeighborhoods(demographicsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleFilterChange = (filterName, filterValue) => {
@@ -45,7 +85,20 @@ const EmptyLocalsMap = () => {
     }));
   };
 
-  // Filter locals based on selected filters
+  const handlePopupOpen = async (lat, lon) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/nearby_restaurants?lat=${lat}&lon=${lon}`);
+      if (!response.ok) {
+        throw new Error('Error al obtener los restaurantes cercanos');
+      }
+      const data = await response.json();
+      setNearbyRestaurants(data);
+      console.log('Restaurantes cercanos:', data);
+    } catch (error) {
+      console.error('Error fetching nearby restaurants:', error);
+    }
+  };
+
   const filteredLocals = locals.filter((local) => {
     const matchesBarrio = filters.barrio ? local.Barrio === filters.barrio : true;
     const matchesPrecioMin = filters.precioMin ? parseFloat(local.Precio) >= parseFloat(filters.precioMin) : true;
@@ -55,43 +108,29 @@ const EmptyLocalsMap = () => {
 
   const barrios = [...new Set(locals.map((local) => local.Barrio))].filter(Boolean);
 
-  const createClusterCustomIcon = (cluster) => {
-    const count = cluster.getChildCount();
-  
-    let size = 'large';
-    let dimension = 40; // Reducir el tamaño a 40 o cualquier valor menor
-  
-    if (count < 10) {
-      size = 'small';
-      dimension = 25; // Reducir aún más para los clústeres más pequeños
-    } else if (count >= 10 && count < 50) {
-      size = 'medium';
-      dimension = 35;
-    }
-  
-    return new L.DivIcon({
-      html: `<div class="cluster-icon ${size}">${count}</div>`,
-      className: 'cluster-icon-wrapper',
-      iconSize: L.point(dimension, dimension, true),
-    });
-  };
-  
-  
-  
-
   return (
     <>
       <EmptyLocalFilters barrios={barrios} onFilterChange={handleFilterChange} />
       <MapContainer center={[41.3851, 2.1734]} zoom={13} style={{ height: '90vh', width: '100%' }}>
         <MapController neighborhoods={neighborhoods} />
         {typeof MarkerClusterGroup !== 'undefined' && (
-          <MarkerClusterGroup
-            iconCreateFunction={createClusterCustomIcon}
-            showCoverageOnHover={false}
-          >
-            <EmptyLocalMarkers filteredLocals={filteredLocals} icon={icon} />
+          <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon} showCoverageOnHover={false}>
+            <EmptyLocalMarkers filteredLocals={filteredLocals} icon={emptyLocalIcon} onPopupOpen={handlePopupOpen} />
           </MarkerClusterGroup>
         )}
+        {nearbyRestaurants.map((restaurant, index) => (
+          <Marker
+            key={index}
+            position={[restaurant.lat, restaurant.lon]}
+            icon={restaurantIcon}
+          >
+            <Popup>
+              <h3>{restaurant.name}</h3>
+              <p>Tipo: {restaurant.type}</p>
+              <p>Rating: {restaurant.rating}</p>
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
     </>
   );

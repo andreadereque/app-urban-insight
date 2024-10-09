@@ -7,6 +7,12 @@ from flask_pymongo import PyMongo
 from flask_cors import CORS  # Para habilitar CORS
 from bson import ObjectId  # Para convertir ObjectId en str
 import logging
+import math
+
+
+
+
+from pymongo import GEOSPHERE
 
 app = Flask(__name__)
 
@@ -24,12 +30,49 @@ demographics_collection = mongo.db['demographic_info']
 restaurants_collection = mongo.db['restaurants']
 empty_locals_collection = mongo.db['empty_locals']
 
-import math
 
-import math
 
-import math
-import logging
+restaurants_collection.create_index([("Geometry.coordinates", GEOSPHERE)], background=True)
+
+@app.route('/nearby_restaurants', methods=['GET'])
+def get_nearby_restaurants():
+    try:
+        # Get the coordinates of the empty local from request
+        lat = float(request.args.get('lat'))
+        lon = float(request.args.get('lon'))
+
+        # Query MongoDB for restaurants within 500 meters
+        query = {
+            "Geometry.coordinates": {
+                "$near": {
+                    "$geometry": {
+                        "type": "Point",
+                        "coordinates": [lon, lat]  # Note: MongoDB uses [longitude, latitude]
+                    },
+                    "$maxDistance": 200  # distance in meters
+                }
+            }
+        }
+
+        nearby_restaurants = list(restaurants_collection.find(query))
+        
+        # Serialize the results
+        response = [
+            {
+                "name": restaurant["Nombre"],
+                "lat": restaurant["Geometry"]["coordinates"][1],
+                "lon": restaurant["Geometry"]["coordinates"][0],
+                "type": restaurant.get("Tipo", "N/A"),
+                "rating": restaurant.get("Nota", "N/A"),
+                "price": restaurant.get("Precio", "N/A")
+            }
+            for restaurant in nearby_restaurants
+        ]
+
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 # Función para verificar si una coordenada es válida
 def is_valid_coordinate(coord):

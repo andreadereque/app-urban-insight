@@ -1,11 +1,10 @@
-// EmptyLocalMarkers.js
 import React from 'react';
 import EmptyLocalMarker from './EmptyLocalMarker';
 
-const EmptyLocalMarkers = ({ filteredLocals, icon }) => (
+const EmptyLocalMarkers = ({ filteredLocals, icon, onPopupOpen }) => (
   <>
     {filteredLocals.map((local, index) => (
-      <EmptyLocalMarker key={index} local={local} icon={icon} />
+      <EmptyLocalMarker key={index} local={local} icon={icon} onPopupOpen={onPopupOpen} />
     ))}
   </>
 );

@@ -1,18 +1,33 @@
 .cluster-icon-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(255, 182, 193, 0.8); /* Color rosado con transparencia */
-    border: 2px solid #f06292; /* Borde un poco más oscuro */
-    width: 50px;
-    height: 50px;
-  }
-  
-  .cluster-icon {
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: bold;
-    text-align: center;
-  }
-  
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    background: rgba(255, 105, 180, 0.9) !important; /* Fondo rosado con mayor opacidad */
+    border: 3px solid #f06292 !important; /* Borde rosado más grueso */
+    width: 50px !important;
+    height: 50px !important;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Añadir sombra para resaltar el ícono */
+}
+
+.cluster-icon-wrapper.small {
+    width: 25px !important;
+    height: 25px !important;
+}
+
+.cluster-icon-wrapper.medium {
+    width: 35px !important;
+    height: 35px !important;
+}
+
+.cluster-icon-wrapper.large {
+    width: 50px !important;
+    height: 50px !important;
+}
+
+.cluster-icon {
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+}

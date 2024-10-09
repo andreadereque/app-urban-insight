@@ -1,14 +1,21 @@
-// EmptyLocalMarker.js
 import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 
-const EmptyLocalMarker = ({ local, icon }) => {
+const EmptyLocalMarker = ({ local, icon, onPopupOpen }) => {
   const coordinates = local.Coordinates || [];
   if (coordinates.length === 2) {
     const [lng, lat] = coordinates;
     if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
       return (
-        <Marker position={[lat, lng]} icon={icon}>
+        <Marker
+          position={[lat, lng]}
+          icon={icon}
+          eventHandlers={{
+            click: () => {
+              onPopupOpen(lat, lng);
+            },
+          }}
+        >
           <Popup>
             <h2 style={{ margin: '0', fontSize: '16px' }}>{local.Título}</h2>
             <p style={{ margin: '0' }}>Precio: {local.Precio}</p>
