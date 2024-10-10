@@ -1,7 +1,7 @@
 import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 
-const EmptyLocalMarker = ({ local, icon, onPopupOpen }) => {
+const EmptyLocalMarker = ({ local, icon, onPopupOpen, onMarkerClick }) => {
   const coordinates = local.Coordinates || [];
   if (coordinates.length === 2) {
     const [lng, lat] = coordinates;
@@ -13,6 +13,15 @@ const EmptyLocalMarker = ({ local, icon, onPopupOpen }) => {
           eventHandlers={{
             click: () => {
               onPopupOpen(lat, lng);
+              if (typeof onMarkerClick === 'function') {
+                onMarkerClick(local);
+              }
+            },
+            popupopen: () => {
+              onPopupOpen(lat, lng);
+              if (typeof onMarkerClick === 'function') {
+                onMarkerClick(local);
+              }
             },
           }}
         >

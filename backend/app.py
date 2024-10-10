@@ -311,31 +311,7 @@ def filter_data():
         "restaurants": filtered_restaurants
     })
 
-@app.route('/api/neighbours_competitors')
-def neighbours_competitors(local):
-    coordinates = local.get("Coordinates")  # TODO: Ver que pinta tiene el objeto que se obtiene con el requests
-    query_pipeline = [
-        {
-            "$geoNear": {
-                "near": {"type": "Point", "coordinates": coordinates},
-                "distanceField": "distancia",  # Campo donde se almacenará la distancia
-                "maxDistance": 500,  # Distancia máxima en metros
-                "spherical": True,  # Cálculo esférico de la distancia
-                "query": {},  # Si quisieras añadir más filtros
-            }
-        },
-        {
-            "$project": {
-                "_id": 0,
-                "Categoría Cocina": 1,
-                "Nota": 1,
-                "Categoría Precio": 1,
-                "Nombre": 1,
-                "Accesibilidad": 1
-                }
-        }
-    ]
-    results = list(mongo.db.aggregate(query_pipeline))
+
 
 
 

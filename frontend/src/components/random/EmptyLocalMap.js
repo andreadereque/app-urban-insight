@@ -9,7 +9,8 @@ import idealistaIconPath from '../../assets/icons/ide.png';
 import restaurantIconPath from '../../assets/icons/rest_icon.png';
 import '../../styles/EmptyLocalFilters.css'; // Asegúrate de tener este archivo CSS
 import '../../styles/EmptyLocalMaps.css'; // Asegúrate de tener este archivo CSS
-
+import axios from 'axios';
+import CompetitorChart from './CompetitorChart'; // Nuevo componente para gráficos
 
 // Función para crear iconos personalizados para los clústeres
 const createClusterCustomIcon = (cluster) => {
@@ -35,15 +36,12 @@ const createClusterCustomIcon = (cluster) => {
   });
 };
 
-
-
-
-
 const EmptyLocalsMap = () => {
   const [locals, setLocals] = useState([]);
   const [neighborhoods, setNeighborhoods] = useState([]);
   const [filters, setFilters] = useState({ barrio: '', precioMin: '', precioMax: '' });
   const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
+  const [competitorsData, setCompetitorsData] = useState(null);
 
   const emptyLocalIcon = new L.Icon({
     iconUrl: idealistaIconPath,
@@ -98,6 +96,30 @@ const EmptyLocalsMap = () => {
       console.error('Error fetching nearby restaurants:', error);
     }
   };
+  
+
+  const fetchNeighbourCompetitors = async (coordinates) => {
+    try {
+      const [lon, lat] = coordinates; // Asegúrate de extraer latitud y longitud correctamente
+  
+      // Realiza la solicitud GET con los parámetros adecuados
+      const response = await axios.get('http://127.0.0.1:5000/api/neighbours_competitors', {
+        params: {
+          lat: lat,
+          lon: lon,
+        },
+      });
+      
+      setCompetitorsData(response.data);
+    } catch (error) {
+      console.error('Error al obtener competidores cercanos:', error);
+    }
+  };
+  
+  const handleMarkerClick = (local) => {
+    const coordinates = local.Geometry?.coordinates || []; 
+        fetchNeighbourCompetitors(coordinates);
+  };
 
   const filteredLocals = locals.filter((local) => {
     const matchesBarrio = filters.barrio ? local.Barrio === filters.barrio : true;
@@ -111,27 +133,34 @@ const EmptyLocalsMap = () => {
   return (
     <>
       <EmptyLocalFilters barrios={barrios} onFilterChange={handleFilterChange} />
-      <MapContainer center={[41.3851, 2.1734]} zoom={13} style={{ height: '90vh', width: '100%' }}>
-        <MapController neighborhoods={neighborhoods} />
-        {typeof MarkerClusterGroup !== 'undefined' && (
-          <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon} showCoverageOnHover={false}>
-            <EmptyLocalMarkers filteredLocals={filteredLocals} icon={emptyLocalIcon} onPopupOpen={handlePopupOpen} />
-          </MarkerClusterGroup>
+      <div className="map-container">
+        <MapContainer center={[41.3851, 2.1734]} zoom={13} style={{ height: '90vh', width: '70%' }}>
+          <MapController neighborhoods={neighborhoods} />
+          {typeof MarkerClusterGroup !== 'undefined' && (
+            <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon} showCoverageOnHover={false}>
+              <EmptyLocalMarkers filteredLocals={filteredLocals} icon={emptyLocalIcon} onMarkerClick={handleMarkerClick} onPopupOpen={handlePopupOpen} />
+            </MarkerClusterGroup>
+          )}
+          {nearbyRestaurants.map((restaurant, index) => (
+            <Marker
+              key={index}
+              position={[restaurant.lat, restaurant.lon]}
+              icon={restaurantIcon}
+            >
+              <Popup>
+                <h3>{restaurant.name}</h3>
+                <p>Tipo: {restaurant.type}</p>
+                <p>Rating: {restaurant.rating}</p>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+        {competitorsData && (
+          <div className="sidebar">
+            <CompetitorChart data={competitorsData} />
+          </div>
         )}
-        {nearbyRestaurants.map((restaurant, index) => (
-          <Marker
-            key={index}
-            position={[restaurant.lat, restaurant.lon]}
-            icon={restaurantIcon}
-          >
-            <Popup>
-              <h3>{restaurant.name}</h3>
-              <p>Tipo: {restaurant.type}</p>
-              <p>Rating: {restaurant.rating}</p>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+      </div>
     </>
   );
 };
