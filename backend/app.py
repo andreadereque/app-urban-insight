@@ -481,7 +481,6 @@ def neighbours_competitors():
 
         # Run the aggregation query
         result = list(mongo.db.restaurants.aggregate(query_pipeline))
-        print("**************",result)
 
         # Handle empty result
         if not result:
