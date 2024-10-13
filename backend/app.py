@@ -7,6 +7,8 @@ from flask_pymongo import PyMongo
 from flask_cors import CORS  # Para habilitar CORS
 from bson import ObjectId  # Para convertir ObjectId en str
 import logging
+from numpy import histogram
+
 import math
 
 
@@ -49,7 +51,7 @@ def get_nearby_restaurants():
                         "type": "Point",
                         "coordinates": [lon, lat]  # Note: MongoDB uses [longitude, latitude]
                     },
-                    "$maxDistance": 200  # distance in meters
+                    "$maxDistance": 500  # distance in meters
                 }
             }
         }
@@ -100,10 +102,9 @@ def get_empty_locals():
         '_id': 0,
         'Título': 1,
         'Dirección completa': 1,
-        'Precio': 1,
-        'itemdetail': 1,
-        'itemdetail2': 1,
-        'itemdetail3': 1,
+        'Precio total (€)': 1,
+        'Superficie (m2)': 1,
+        'Precio (€/m2)': 1,
         'Barrio': 1,
         'Geometry.coordinates': 1
     })
@@ -111,13 +112,13 @@ def get_empty_locals():
     locals_list = []
 
     for local in empty_locals:
+        # Retrieve values from the updated structure
         direccion = local.get("Dirección completa")
         coordenadas = local.get("Geometry", {}).get("coordinates", [])
         titulo = local.get("Título")
-        precio = local.get("Precio")
-        itemdetail = local.get("itemdetail")
-        itemdetail2 = local.get("itemdetail2")
-        itemdetail3 = local.get("itemdetail3")
+        precio_total = local.get("Precio total (€)")
+        superficie = local.get("Superficie (m2)")
+        precio_por_m2 = local.get("Precio (€/m2)")
         barrio = local.get("Barrio")
 
         # Verificar si la dirección es válida
@@ -128,12 +129,12 @@ def get_empty_locals():
         if not coordenadas or len(coordenadas) != 2 or not all(is_valid_value(coord) for coord in coordenadas):
             continue
 
-        # Verificar que el título y otros detalles no sean nulos o vacíos
-        if not titulo or not itemdetail:
+        # Verificar que el título no sea nulo o vacío
+        if not titulo:
             continue
 
-        # Preprocesar el precio para convertirlo a un número
-        precio_num = preprocess_price(precio)
+        # Preprocesar el precio total para convertirlo a un número
+        precio_num = preprocess_price(precio_total)
         if precio_num is None:  # Filtrar locales con precios no válidos
             continue
 
@@ -141,14 +142,13 @@ def get_empty_locals():
         if not is_valid_value(barrio):
             continue
 
-        # Si pasa las verificaciones, añadir el local a la lista
+        # Añadir el local a la lista si pasa las verificaciones
         locals_list.append({
             "Título": titulo,
             "Dirección completa": direccion,
-            "Precio": precio_num,  # Usar el precio ya convertido
-            "Itemdetail": itemdetail,
-            "Itemdetail2": itemdetail2,
-            "Itemdetail3": itemdetail3,
+            "Precio total (€)": precio_num,
+            "Superficie (m2)": superficie,
+            "Precio (€/m2)": precio_por_m2,
             "Barrio": barrio,
             "Coordinates": coordenadas
         })
@@ -158,16 +158,34 @@ def get_empty_locals():
 
     return jsonify(locals_list)
 
-def preprocess_price(price_string):
-    """Preprocesar el precio para convertirlo a un número"""
-    if not price_string:
-        return None
-    try:
-        # Remover caracteres que no son parte del número
-        clean_string = price_string.replace('€', '').replace('/mes', '').replace('.', '').replace(',', '.').strip()
-        return float(clean_string)
-    except ValueError:
-        return None
+
+import re
+import logging
+
+# Function to validate a coordinate or string value
+def is_valid_value(value):
+    if isinstance(value, str):
+        return bool(value.strip())
+    elif isinstance(value, (int, float)):
+        return True
+    return False
+
+# Function to preprocess the price and convert it to a float
+def preprocess_price(precio):
+    if isinstance(precio, str):
+        # Remove currency symbols and any non-numeric characters
+        precio_clean = re.sub(r'[^\d.,]', '', precio)
+        
+        # Convert to float if possible
+        try:
+            return float(precio_clean.replace(',', '.'))
+        except ValueError:
+            logging.warning(f"Precio no válido: {precio}")
+            return None
+    elif isinstance(precio, (int, float)):
+        return precio
+    return None
+
 
 
 
@@ -178,7 +196,6 @@ def get_transport():
     transport_data = list(transport_collection.find({}, {'_id': 0}))  # Excluir _id de la respuesta
     return jsonify(transport_data)
 
-@app.route('/api/demographics', methods=['GET'])  # TODO: mirar si se tiene que quitar esta linea repetida
 # Ruta: Obtener datos demográficos con filtros
 @app.route('/api/demographics', methods=['GET'])
 def get_demographics():
@@ -401,5 +418,96 @@ def get_restaurant_types():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+def calculate_histogram(data: list, intervals=None):
+    data = [x for x in data if x is not None]
+    n = len(data)
+    if isinstance(data[0], str):
+        hist = Counter(data)
+        for k in hist.keys():
+            hist[k] = float(hist[k]/n)
+    elif isinstance(data[0], float):
+        if intervals is None:
+            raise ValueError('If the data are numbers you must provide the intervals')
+        hist = histogram(data, bins=intervals)
+        hist_vals = [float(x/n) for x in hist[0]]
+        hist = (hist_vals, hist[1].tolist())
+    else:
+        raise ValueError('Data must be a list of strings or floats')
+    return hist
+@app.route('/api/neighbours_competitors', methods=['GET'])
+def neighbours_competitors():
+    try:
+        # Retrieve latitude and longitude from request arguments
+        lat = request.args.get('lat')
+        lon = request.args.get('lon')
+        print("fhwiehfuiwhfiwhfiewuh",lat, lon)
+        # Validate latitude and longitude
+        if not lat or not lon:
+            return jsonify({"error": "Missing latitude or longitude"}), 400
+
+        lat = float(lat)
+        lon = float(lon)
+
+        # Define the aggregation pipeline with explicit index key
+        query_pipeline = [
+            {
+                "$geoNear": {
+                    "near": {"type": "Point", "coordinates": [lon, lat]},
+                    "distanceField": "distancia",  # Field where distance will be stored
+                    "maxDistance": 500,  # Maximum distance in meters
+                    "spherical": True,  # Spherical calculation
+                    "key": "Geometry.coordinates"  # Specify which index to use
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "Categoría Cocina": 1,
+                    "Nota": 1,
+                    "Categoría Precio": 1,
+                    "Accesibilidad": 1
+                }
+            },
+            {
+                "$group": {
+                    "_id": None,
+                    "categoría_cocina": {"$push": "$Categoría Cocina"},
+                    "notas": {"$push": "$Nota"},
+                    "categoría_precio": {"$push": "$Categoría Precio"},
+                    "accesibilidad": {"$push": "$Accesibilidad"}
+                }
+            }
+        ]
+
+        # Run the aggregation query
+        result = list(mongo.db.restaurants.aggregate(query_pipeline))
+        print("**************",result)
+
+        # Handle empty result
+        if not result:
+            return jsonify({"error": "No nearby competitors found"}), 404
+
+        restaurant_data = result[0]
+        number_of_restaurants = len(restaurant_data.get("notas", []))
+        category_histogram = calculate_histogram(restaurant_data.get("categoría_cocina", []))
+        price_histogram = calculate_histogram(restaurant_data.get("categoría_precio", []))
+        mark_histogram = calculate_histogram(restaurant_data.get("notas", []), intervals=[x * 0.5 for x in range(11)])
+        accessibility_histogram = calculate_histogram(restaurant_data.get("accesibilidad", []), intervals=[x for x in range(11)])
+
+        return jsonify({
+            "Categoria Cocina": category_histogram,
+            "Numero de restaurantes": number_of_restaurants,
+            "Precio": price_histogram,
+            "Nota": mark_histogram,
+            "Accesibilidad": accessibility_histogram
+        })
+
+    except ValueError:
+        return jsonify({"error": "Invalid latitude or longitude"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)

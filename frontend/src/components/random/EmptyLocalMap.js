@@ -64,6 +64,7 @@ const EmptyLocalsMap = () => {
         const localsResponse = await fetch('http://127.0.0.1:5000/api/empty_locals');
         const localsData = await localsResponse.json();
         setLocals(localsData);
+        console.log('xxxxx',localsData)
 
         const demographicsResponse = await fetch('http://127.0.0.1:5000/api/demographics');
         const demographicsData = await demographicsResponse.json();
@@ -101,7 +102,7 @@ const EmptyLocalsMap = () => {
   const fetchNeighbourCompetitors = async (coordinates) => {
     try {
       const [lon, lat] = coordinates; // Asegúrate de extraer latitud y longitud correctamente
-  
+      console.log("tttttttttttt", [lon, lat])
       // Realiza la solicitud GET con los parámetros adecuados
       const response = await axios.get('http://127.0.0.1:5000/api/neighbours_competitors', {
         params: {
@@ -111,58 +112,65 @@ const EmptyLocalsMap = () => {
       });
       
       setCompetitorsData(response.data);
+      console.log("dataaaaaa", response.data)
     } catch (error) {
       console.error('Error al obtener competidores cercanos:', error);
     }
   };
   
   const handleMarkerClick = (local) => {
-    const coordinates = local.Geometry?.coordinates || []; 
-        fetchNeighbourCompetitors(coordinates);
-  };
+    console.log(local)
+    const coordinates = local["Coordinates"] || [];  // Asegúrate de usar "Coordinates" en lugar de Geometry.coordinates
+    fetchNeighbourCompetitors(coordinates);  // Llamas a la función con las coordenadas
+    console.log("local", local);
+    console.log("coordi", coordinates);
 
-  const filteredLocals = locals.filter((local) => {
-    const matchesBarrio = filters.barrio ? local.Barrio === filters.barrio : true;
-    const matchesPrecioMin = filters.precioMin ? parseFloat(local.Precio) >= parseFloat(filters.precioMin) : true;
-    const matchesPrecioMax = filters.precioMax ? parseFloat(local.Precio) <= parseFloat(filters.precioMax) : true;
-    return matchesBarrio && matchesPrecioMin && matchesPrecioMax;
-  });
+};
+
+
+const filteredLocals = locals.filter((local) => {
+  const matchesBarrio = filters.barrio ? local.Barrio === filters.barrio : true;
+  const matchesPrecioMin = filters.precioMin ? parseFloat(local.Precio) >= parseFloat(filters.precioMin) : true;
+  const matchesPrecioMax = filters.precioMax ? parseFloat(local.Precio) <= parseFloat(filters.precioMax) : true;
+  return matchesBarrio && matchesPrecioMin && matchesPrecioMax;
+});
+
 
   const barrios = [...new Set(locals.map((local) => local.Barrio))].filter(Boolean);
 
-  return (
-    <>
-      <EmptyLocalFilters barrios={barrios} onFilterChange={handleFilterChange} />
-      <div className="map-container">
-        <MapContainer center={[41.3851, 2.1734]} zoom={13} style={{ height: '90vh', width: '70%' }}>
-          <MapController neighborhoods={neighborhoods} />
-          {typeof MarkerClusterGroup !== 'undefined' && (
-            <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon} showCoverageOnHover={false}>
-              <EmptyLocalMarkers filteredLocals={filteredLocals} icon={emptyLocalIcon} onMarkerClick={handleMarkerClick} onPopupOpen={handlePopupOpen} />
-            </MarkerClusterGroup>
-          )}
-          {nearbyRestaurants.map((restaurant, index) => (
-            <Marker
-              key={index}
-              position={[restaurant.lat, restaurant.lon]}
-              icon={restaurantIcon}
-            >
-              <Popup>
-                <h3>{restaurant.name}</h3>
-                <p>Tipo: {restaurant.type}</p>
-                <p>Rating: {restaurant.rating}</p>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
-        {competitorsData && (
-          <div className="sidebar">
-            <CompetitorChart data={competitorsData} />
-          </div>
+ return (
+  <>
+    <EmptyLocalFilters barrios={barrios} onFilterChange={handleFilterChange} />
+    <div className="map-container">
+      <MapContainer center={[41.3851, 2.1734]} zoom={13} style={{ height: '100%', width: '100%' }}>
+        <MapController neighborhoods={neighborhoods} />
+        {typeof MarkerClusterGroup !== 'undefined' && (
+          <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon} showCoverageOnHover={false}>
+            <EmptyLocalMarkers filteredLocals={filteredLocals} icon={emptyLocalIcon} onMarkerClick={handleMarkerClick} onPopupOpen={handlePopupOpen} />
+          </MarkerClusterGroup>
         )}
-      </div>
-    </>
-  );
-};
+        {nearbyRestaurants.map((restaurant, index) => (
+          <Marker
+            key={index}
+            position={[restaurant.lat, restaurant.lon]}
+            icon={restaurantIcon}
+          >
+            <Popup>
+              <h3>{restaurant.name}</h3>
+              <p>Tipo: {restaurant.type}</p>
+              <p>Rating: {restaurant.rating}</p>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+      {competitorsData && (
+        <div className="sidebar">
+          <CompetitorChart data={competitorsData} />
+        </div>
+      )}
+    </div>
+  </>
+);
+}
 
 export default EmptyLocalsMap;
