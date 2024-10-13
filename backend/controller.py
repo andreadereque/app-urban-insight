@@ -51,6 +51,13 @@ def get_demographics():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/neighborhoods', methods=['GET'])
+def get_neighborhoods():
+    try:
+        return demographics_service.get_neigborhoods()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 @app.route('/restaurants', methods=['GET'])
 def get_restaurants():
     return restaurant_service.get_restaurants()
@@ -76,6 +83,25 @@ def neighbours_competitors():
         return jsonify({"error": "Invalid latitude or longitude"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/restaurant_counts', methods=['GET'])
+def get_restaurant_counts():
+    try:
+        # Obtener los barrios con geometría desde el servicio de demografía
+        neighborhoods = demographics_service.get_neigborhoods()
+        
+        # Calcular el conteo de restaurantes por barrio usando el servicio de restaurantes
+        restaurant_count_by_neighborhood = restaurant_service.get_restaurant_count_by_neighborhood(neighborhoods)
+        
+        return jsonify(restaurant_count_by_neighborhood), 200
+
+    except Exception as e:
+        logging.error(f"Error calculating restaurant counts: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+    
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

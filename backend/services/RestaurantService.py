@@ -4,6 +4,13 @@ import logging
 from numpy import histogram
 import math
 from collections import Counter
+from shapely.geometry import Point, Polygon
+from pyproj import Transformer
+transformer = Transformer.from_crs("EPSG:32631", "EPSG:4326", always_xy=True)  # Asegúrate de usar el código UTM correcto
+
+
+
+
 
 class RestaurantService:
     def __init__(self, mongo):
@@ -139,3 +146,37 @@ class RestaurantService:
             return (hist_vals, hist[1].tolist())
         else:
             raise ValueError('Data must be a list of strings or floats')
+        
+    def convert_utm_to_latlon(self, utm_x, utm_y):
+        """ Convierte coordenadas UTM a latitud/longitud (WGS84) utilizando Transformer """
+        lon, lat = transformer.transform(utm_x, utm_y)
+        return lon, lat
+
+    def get_restaurant_count_by_neighborhood(self, neighborhoods):
+        restaurant_count_by_neighborhood = {}
+
+        for neighborhood in neighborhoods:
+            # Convertir las coordenadas UTM a lat/lon solo una vez por barrio
+            utm_polygon_coords = neighborhood['Geometry']['coordinates'][0]
+            latlon_polygon_coords = [self.convert_utm_to_latlon(x, y) for x, y in utm_polygon_coords]
+
+            # Crear el polígono en formato GeoJSON
+            polygon_geojson = {
+                "type": "Polygon",
+                "coordinates": [latlon_polygon_coords]  # GeoJSON espera [ [lat, lon], ... ]
+            }
+
+            # Consulta geoespacial en MongoDB usando $geoWithin
+            query = {
+                "Geometry.coordinates": {
+                    "$geoWithin": {
+                        "$geometry": polygon_geojson
+                    }
+                }
+            }
+
+            # Contar los restaurantes dentro del barrio
+            count = self.restaurants_collection.count_documents(query)
+            restaurant_count_by_neighborhood[neighborhood['Nombre']] = count
+
+        return restaurant_count_by_neighborhood

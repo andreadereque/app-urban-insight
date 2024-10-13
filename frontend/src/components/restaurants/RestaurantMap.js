@@ -1,91 +1,109 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer, Popup, Polygon } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from '@changey/react-leaflet-markercluster';
 import axios from 'axios';
+import proj4 from 'proj4';
+import RestaurantMarkers from './Icons/RestaurantMarkers';
+import ClusterCustomIcon from './Icons/ClusterCustomIcon';
+import RestaurantIcon from './Icons/RestaurantIcon';
+import TransportIcon from './Icons/TransportIcon';
+import HeatmapLegend from './HeatmapLegend'; // Importar la leyenda
 import L from 'leaflet';
-import HeatmapLegend from './HeatmapLegend';
-import RestaurantMarkers from './RestaurantMarkers';
-import NeighborhoodPolygons from './NeighborhoodPolygons';
-import restIconPath from '../../assets/icons/rest_icon.png';
-import busIconPath from '../../assets/icons/bus.png';
-import PopularCategoriesChart from './PopularCategoriesChart';
-import ViabilityIndicatorsChart from './ViabilityIndicatorsChart';
-import HeatmapByCuisine from './HeatmapByCuisine';
+import HeatmapCharts from './HeatmapByCuisine';
 
-const restaurantIcon = new L.Icon({
-  iconUrl: restIconPath,
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32],
-});
-
-const busIcon = new L.Icon({
-  iconUrl: busIconPath,
-  iconSize: [20, 20],
-  iconAnchor: [10, 20],
-  popupAnchor: [0, -20],
-});
-
-const createClusterCustomIcon = (cluster) => {
-  const count = cluster.getChildCount();
-  return L.divIcon({
-    html: `<div style="
-            background-color: rgba(255, 182, 193, 0.8);
-            color: #fff;
-            border-radius: 50%;
-            padding: 5px;
-            border: 1px solid #ff69b4;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            font-weight: bold;
-            font-size: 12px;">
-            ${count}
-          </div>`,
-    className: 'custom-cluster-icon',
-    iconSize: L.point(30, 30, true),
-  });
-};
 
 const RestaurantMap = ({ filteredRestaurants }) => {
   const mapRef = useRef(null);
-  const [neighborhoods, setNeighborhoods] = useState([]);
   const [showNeighborhoods, setShowNeighborhoods] = useState(false);
-  const [heatmapActive, setHeatmapActive] = useState(false);
-  const [showTransport, setShowTransport] = useState(false);
-  const [showPopularCategories, setShowPopularCategories] = useState(false);
-  const [selectedTransportType, setSelectedTransportType] = useState('');
-  const [restaurantCounts, setRestaurantCounts] = useState({});
+  const [showTransports, setShowTransports] = useState(false);
   const [transportData, setTransportData] = useState([]);
-  const [categoryCountsByBarrio, setCategoryCountsByBarrio] = useState({});
+  const [selectedTransportType, setSelectedTransportType] = useState('');
+
+  const [neighborhoods, setNeighborhoods] = useState([]);
+  const [heatmapActive, setHeatmapActive] = useState(false);
+  const [restaurantCounts, setRestaurantCounts] = useState({});
+  const [showWarning, setShowWarning] = useState(false);
+
   const neighborhoodLayersRef = useRef([]);
   const transportLayersRef = useRef([]);
-  const [showViabilityIndicators, setShowViabilityIndicators] = useState(false);
-  const [viabilityData, setViabilityData] = useState([]);
-  const [selectedCuisine] = useState('');
-  const [filteredByCuisine, setFilteredByCuisine] = useState(filteredRestaurants);
 
+  // Función para obtener el color basado en el número de restaurantes
+  const getColorForRestaurantCount = (count) => {
+    if (count > 150) return '#800026';
+    if (count > 100) return '#BD0026';
+    if (count > 75) return '#E31A1C';
+    if (count > 50) return '#FC4E2A';
+    if (count > 25) return '#FD8D3C';
+    if (count > 10) return '#FEB24C';
+    if (count > 0) return '#FED976';
+    return '#FFEDA0'; // Para barrios sin restaurantes
+  };
+
+  // Cargar barrios desde la API
   useEffect(() => {
-    if (selectedCuisine) {
-      setFilteredByCuisine(
-        filteredRestaurants.filter((restaurant) => restaurant["Categoría Cocina"] === selectedCuisine)
-      );
-    } else {
-      setFilteredByCuisine(filteredRestaurants);  // Show all if no cuisine is selected
-    }
-  }, [selectedCuisine, filteredRestaurants]);
-
-
-
-
-  useEffect(() => {
-    axios.get("http://127.0.0.1:5000/api/demographics")
+    axios.get("http://127.0.0.1:5000/api/neighborhoods")
       .then(response => {
         setNeighborhoods(response.data);
       })
       .catch(error => console.error("Error al cargar los datos de barrios", error));
   }, []);
 
+  // Recalcular los conteos de restaurantes por barrio basados en los restaurantes filtrados
   useEffect(() => {
-    if (showTransport) {
+    const countsByNeighborhood = {};
+
+    filteredRestaurants.forEach(restaurant => {
+      const neighborhood = restaurant.Barrio;
+      if (neighborhood) {
+        if (!countsByNeighborhood[neighborhood]) {
+          countsByNeighborhood[neighborhood] = 0;
+        }
+        countsByNeighborhood[neighborhood] += 1;
+      }
+    });
+
+    setRestaurantCounts(countsByNeighborhood); // Actualiza el estado con los nuevos conteos
+  }, [filteredRestaurants]);
+
+  // Mostrar/Ocultar los barrios y aplicar heatmap
+  useEffect(() => {
+    if (mapRef?.current) {
+      neighborhoodLayersRef.current.forEach(layer => {
+        if (mapRef.current.hasLayer(layer)) {
+          mapRef.current.removeLayer(layer);
+        }
+      });
+      neighborhoodLayersRef.current = [];
+
+      if (showNeighborhoods) {
+        const utmZone = "+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs";
+
+        neighborhoods.forEach((neighborhood) => {
+          const coordinates = neighborhood.Geometry.coordinates[0];
+          const latLngs = coordinates.map(coord => {
+            const [easting, northing] = coord;
+            const latLng = proj4(utmZone, "WGS84", [easting, northing]);
+            return [latLng[1], latLng[0]];
+          });
+
+          const count = restaurantCounts[neighborhood.Nombre] || 0;  // Obtener el número de restaurantes filtrados
+          const color = heatmapActive ? getColorForRestaurantCount(count) : 'purple';  // Cambia entre el color de heatmap o el color original
+
+          const polygon = L.polygon(latLngs, {
+            color: 'purple',
+            fillColor: color,  // Usa el color basado en si el heatmap está activo
+            fillOpacity: heatmapActive ? 0.7 : 0.5  // Ajusta la opacidad basado en si el heatmap está activo
+          }).addTo(mapRef.current);
+
+          neighborhoodLayersRef.current.push(polygon);
+        });
+      }
+    }
+  }, [showNeighborhoods, neighborhoods, heatmapActive, restaurantCounts]);
+
+  // Cargar y mostrar transportes
+  useEffect(() => {
+    if (showTransports) {
       axios.get("http://127.0.0.1:5000/transport")
         .then(response => {
           setTransportData(response.data);
@@ -94,97 +112,58 @@ const RestaurantMap = ({ filteredRestaurants }) => {
     } else {
       clearTransportLayers();
     }
-  }, [showTransport]);
+  }, [showTransports]);
 
+  // Mostrar los transportes en el mapa
   useEffect(() => {
-    const counts = filteredRestaurants.reduce((acc, restaurant) => {
-      const barrio = restaurant.Barrio;
-      if (!acc[barrio]) acc[barrio] = 0;
-      acc[barrio] += 1;
-      return acc;
-    }, {});
-    setRestaurantCounts(counts);
+    const mapInstance = mapRef.current; // Copiamos el valor de mapRef.current a una variable local
 
-    const categoryCounts = filteredRestaurants.reduce((acc, restaurant) => {
-      const barrio = restaurant.Barrio;
-      const category = restaurant["Categoría Cocina"];
-      if (!acc[barrio]) acc[barrio] = {};
-      if (!acc[barrio][category]) acc[barrio][category] = 0;
-      acc[barrio][category] += 1;
-      return acc;
-    }, {});
-    setCategoryCountsByBarrio(categoryCounts);
-  }, [filteredRestaurants]);
+    const handleZoomChange = () => {
+      if (!mapInstance) return; // Asegurarse de que mapInstance no es null
 
-  useEffect(() => {
-    if (mapRef.current && showTransport && transportData.length) {
-      clearTransportLayers();
-      const currentZoom = mapRef.current.getZoom();
-      if (currentZoom >= 17) { // Mostrar transporte solo a un nivel de zoom cercano
+      const currentZoom = mapInstance.getZoom(); // Obtener el nivel de zoom actual
+
+      // Verifica que el zoom sea igual o superior a 17 y que haya transportes para mostrar
+      if (currentZoom >= 17 && showTransports && transportData.length) {
+        clearTransportLayers(); // Limpiar capas de transporte anteriores
         transportData.forEach((transport) => {
           if (!selectedTransportType || transport.Tipo === selectedTransportType) {
             const { coordinates } = transport.Geometry;
-            const marker = L.marker([coordinates[1], coordinates[0]], { icon: busIcon }).addTo(mapRef.current);
+            const marker = L.marker([coordinates[1], coordinates[0]], { icon: TransportIcon }).addTo(mapInstance);
             marker.bindPopup(`<b>Tipo:</b> ${transport.Tipo}<br/><b>Líneas:</b> ${transport.Lineas.join(", ")}`);
             transportLayersRef.current.push(marker);
           }
         });
+      } else {
+        clearTransportLayers(); // Limpiar las capas si el zoom es inferior a 17
       }
-    }
-  }, [mapRef, showTransport, transportData, selectedTransportType]);
+    };
 
-  useEffect(() => {
-    if (mapRef.current) {
-      mapRef.current.on('zoomend', () => {
-        if (showTransport) {
-          clearTransportLayers();
-          const currentZoom = mapRef.current.getZoom();
-          if (currentZoom >= 17) { // Mostrar transporte solo a un nivel de zoom cercano
-            transportData.forEach((transport) => {
-              if (!selectedTransportType || transport.Tipo === selectedTransportType) {
-                const { coordinates } = transport.Geometry;
-                const marker = L.marker([coordinates[1], coordinates[0]], { icon: busIcon }).addTo(mapRef.current);
-                marker.bindPopup(`<b>Tipo:</b> ${transport.Tipo}<br/><b>Líneas:</b> ${transport.Lineas.join(", ")}`);
-                transportLayersRef.current.push(marker);
-              }
-            });
-          }
-        }
-      });
+    // Verifica que el mapa esté montado y el mapa ref no sea null
+    if (mapInstance) {
+      mapInstance.on('zoomend', handleZoomChange); // Escucha cambios en el zoom
+      handleZoomChange(); // Ejecuta la lógica inmediatamente en el primer render
     }
-  }, [mapRef, showTransport, transportData, selectedTransportType]);
-  useEffect(() => {
-    if (showViabilityIndicators) {
-      axios.get("http://127.0.0.1:5000/api/viability")
-        .then(response => {
-          console.log('***************', response)
-          setViabilityData(response.data);
-        })
-        .catch(error => console.error("Error al cargar los indicadores de viabilidad", error));
-    }
-  }, [showViabilityIndicators]);
 
-  const getColorForRestaurantCount = (count) => {
-    return count > 150 ? '#800026' :
-      count > 120 ? '#BD0026' :
-        count > 90 ? '#E31A1C' :
-          count > 60 ? '#FC4E2A' :
-            count > 30 ? '#FD8D3C' :
-              count > 14 ? '#FEB24C' :
-                '#FFEDA0';
+    // Limpia el listener cuando se desmonta el componente
+    return () => {
+      if (mapInstance) {
+        mapInstance.off('zoomend', handleZoomChange);
+      }
+    };
+  }, [showTransports, transportData, selectedTransportType]);
+
+
+  const handleHeatmapClick = () => {
+    if (!showNeighborhoods) {
+      setShowWarning(true); // Mostrar advertencia si no están activados los barrios
+    } else {
+      setHeatmapActive(!heatmapActive);  // Alternar el estado del heatmap
+    }
   };
 
-  const getPopularCategoryForBarrio = (barrio) => {
-    const categories = categoryCountsByBarrio[barrio];
-    if (!categories) return 'Desconocido';
-    return Object.keys(categories).reduce((a, b) => categories[a] > categories[b] ? a : b);
-  };
-
-  const clearLayers = () => {
-    neighborhoodLayersRef.current.forEach(layer => {
-      mapRef.current.removeLayer(layer);
-    });
-    neighborhoodLayersRef.current = [];
+  const closeWarning = () => {
+    setShowWarning(false); // Cerrar popup
   };
 
   const clearTransportLayers = () => {
@@ -193,165 +172,74 @@ const RestaurantMap = ({ filteredRestaurants }) => {
     });
     transportLayersRef.current = [];
   };
-  useEffect(() => {
-    if (showPopularCategories) {
-      console.log("**Datos filtrados de restaurantes:", filteredRestaurants); // Verifica que cada restaurante tenga el campo 'Barrio'
-
-      const categoryCounts = filteredRestaurants.reduce((acc, restaurant) => {
-        const barrio = restaurant.Barrio; // Aquí tomamos el barrio
-        if (!barrio || barrio === "Desconocido") return acc; // Ignorar si el barrio está vacío o es "Desconocido"
-
-        const category = restaurant["Tipo"];
-        if (!acc[barrio]) acc[barrio] = {};
-        if (!acc[barrio][category]) acc[barrio][category] = 0;
-        acc[barrio][category] += 1; // Aumentar el conteo de esa categoría en ese barrio
-        return acc;
-      }, {});
-
-      const popularCategories = {};
-      for (let barrio in categoryCounts) {
-        const sortedCategories = Object.entries(categoryCounts[barrio]).sort((a, b) => b[1] - a[1]);
-        popularCategories[barrio] = sortedCategories[0]; // Obtener la categoría más popular
-      }
-      setCategoryCountsByBarrio(popularCategories);
-    }
-  }, [showPopularCategories, filteredRestaurants]);
-
-  useEffect(() => {
-    if (selectedCuisine) {
-      setFilteredByCuisine(
-        filteredRestaurants.filter((restaurant) => restaurant["Categoría Cocina"] === selectedCuisine)
-      );
-    } else {
-      setFilteredByCuisine(filteredRestaurants);  // If no filter, show all
-    }
-  }, [selectedCuisine, filteredRestaurants]);
-
-
-
-
 
   return (
-    <div>
-      {/* Botones de control para el mapa y las capas */}
-      <div>
-        <button
-          onClick={() => setShowNeighborhoods(!showNeighborhoods)}
-          style={{
-            marginBottom: '10px',
-            padding: '10px 20px',
-            backgroundColor: showNeighborhoods ? '#f7c5cc' : '#e4a0b3',
-            color: '#fff',
-            border: '2px solid #f3b2c0',
-            borderRadius: '30px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: 'bold',
-            fontSize: '16px',
-          }}
-          onMouseOver={(e) => e.target.style.backgroundColor = showNeighborhoods ? '#f9dfe2' : '#f4b6c2'}
-          onMouseOut={(e) => e.target.style.backgroundColor = showNeighborhoods ? '#f7c5cc' : '#e4a0b3'}
-        >
-          {showNeighborhoods ? 'Ocultar Barrios' : 'Mostrar Barrios'}
-        </button>
-  
-        <button
-          onClick={() => setHeatmapActive(!heatmapActive)}
-          style={{
-            marginBottom: '10px',
-            marginLeft: '15px',
-            padding: '10px 20px',
-            backgroundColor: heatmapActive ? '#ffccac' : '#ffb07c',
-            color: '#fff',
-            border: '2px solid #ffc3a1',
-            borderRadius: '30px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: 'bold',
-            fontSize: '16px',
-          }}
-          onMouseOver={(e) => e.target.style.backgroundColor = heatmapActive ? '#ffe0d0' : '#ffc49b'}
-          onMouseOut={(e) => e.target.style.backgroundColor = heatmapActive ? '#ffccac' : '#ffb07c'}
-        >
-          {heatmapActive ? 'Desactivar Heatmap' : 'Activar Heatmap'}
-        </button>
-  
-        <button
-          onClick={() => setShowTransport(!showTransport)}
-          style={{
-            marginBottom: '10px',
-            marginLeft: '15px',
-            padding: '10px 20px',
-            backgroundColor: showTransport ? '#d0e6a5' : '#b5e48c',
-            color: '#fff',
-            border: '2px solid #c4e69e',
-            borderRadius: '30px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: 'bold',
-            fontSize: '16px',
-          }}
-          onMouseOver={(e) => e.target.style.backgroundColor = showTransport ? '#e0f0c4' : '#c9eab3'}
-          onMouseOut={(e) => e.target.style.backgroundColor = showTransport ? '#d0e6a5' : '#b5e48c'}
-        >
-          {showTransport ? 'Ocultar Transporte' : 'Mostrar Transporte'}
-        </button>
-  
-        <button
-          onClick={() => setShowPopularCategories(!showPopularCategories)}
-          style={{
-            marginBottom: '10px',
-            marginLeft: '15px',
-            padding: '10px 20px',
-            backgroundColor: showPopularCategories ? '#c5cae9' : '#7986cb',
-            color: '#fff',
-            border: '2px solid #9fa8da',
-            borderRadius: '30px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: 'bold',
-            fontSize: '16px',
-          }}
-          onMouseOver={(e) => e.target.style.backgroundColor = showPopularCategories ? '#d1d9ff' : '#9fa8da'}
-          onMouseOut={(e) => e.target.style.backgroundColor = showPopularCategories ? '#c5cae9' : '#7986cb'}
-        >
-          {showPopularCategories ? 'Ocultar Categorías Populares' : 'Mostrar Categorías Populares'}
-        </button>
-  
-        <button
-          onClick={() => setShowViabilityIndicators(!showViabilityIndicators)}
-          style={{
-            marginBottom: '10px',
-            marginLeft: '15px',
-            padding: '10px 20px',
-            backgroundColor: showViabilityIndicators ? '#f5b041' : '#f4d03f',
-            color: '#fff',
-            border: '2px solid #f8c471',
-            borderRadius: '30px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: 'bold',
-            fontSize: '16px',
-          }}
-          onMouseOver={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f7ca79' : '#f5e599'}
-          onMouseOut={(e) => e.target.style.backgroundColor = showViabilityIndicators ? '#f5b041' : '#f4d03f'}
-        >
-          {showViabilityIndicators ? 'Ocultar Indicadores de Viabilidad' : 'Mostrar Indicadores de Viabilidad'}
-        </button>
-      </div>
-  
-      {/* Contenedor para el mapa */}
+    <>
       <div style={{ height: '800px', width: '100%' }}>  {/* Limitamos la altura del mapa */}
+        <div>
+          <button
+            onClick={() => setShowNeighborhoods(!showNeighborhoods)}
+            style={{ marginBottom: '10px', padding: '10px 20px', backgroundColor: showNeighborhoods ? '#f7c5cc' : '#e4a0b3', color: '#fff', border: '2px solid #f3b2c0', borderRadius: '30px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: 'bold', fontSize: '16px' }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = showNeighborhoods ? '#f9dfe2' : '#f4b6c2')}
+            onMouseOut={(e) => (e.target.style.backgroundColor = showNeighborhoods ? '#f7c5cc' : '#e4a0b3')}
+          >
+            {showNeighborhoods ? 'Ocultar Barrios' : 'Mostrar Barrios'}
+          </button>
+
+          <button
+            onClick={handleHeatmapClick}
+            style={{ marginBottom: '10px', marginLeft: '15px', padding: '10px 20px', backgroundColor: heatmapActive ? '#ffccac' : '#ffb07c', color: '#fff', border: '2px solid #ffc3a1', borderRadius: '30px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: 'bold', fontSize: '16px' }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = heatmapActive ? '#ffe0d0' : '#ffc49b')}
+            onMouseOut={(e) => (e.target.style.backgroundColor = heatmapActive ? '#ffccac' : '#ffb07c')}
+          >
+            {heatmapActive ? 'Desactivar Heatmap' : 'Activar Heatmap'}
+          </button>
+
+          <button
+            onClick={() => setShowTransports(!showTransports)}
+            style={{ marginBottom: '10px', marginLeft: '15px', padding: '10px 20px', backgroundColor: showTransports ? '#d0e6a5' : '#b5e48c', color: '#fff', border: '2px solid #c4e69e', borderRadius: '30px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: 'bold', fontSize: '16px' }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = showTransports ? '#f9dfe2' : '#f4b6c2')}
+            onMouseOut={(e) => (e.target.style.backgroundColor = showTransports ? '#f7c5cc' : '#e4a0b3')}
+          >
+            {showTransports ? 'Ocultar Transportes' : 'Mostrar Transportes'}
+          </button>
+          {/* Select de transporte */}
+          {showTransports && (
+            <select
+              value={selectedTransportType}
+              onChange={(e) => setSelectedTransportType(e.target.value)}
+              style={{
+                marginBottom: '10px',
+                marginLeft: '15px',
+                padding: '10px',
+                borderRadius: '10px',
+                border: '1px solid #ccc',
+                fontSize: '16px',
+              }}
+            >
+              <option value="">Todos los transportes</option>
+              <option value="BUS">BUS</option>
+              <option value="METRO">METRO</option>
+              <option value="FGC">FGC</option>
+              <option value="RENFE">RENFE</option>
+              <option value="Parking">PARKING</option>
+
+            </select>
+          )}
+          {showWarning && (
+            <div style={{ padding: '20px', backgroundColor: '#ffcccc', border: '1px solid #ff0000', marginTop: '20px' }}>
+              <p>No puedes activar el heatmap sin antes mostrar los barrios.</p>
+              <button onClick={closeWarning} style={{ padding: '10px', backgroundColor: '#ff6666', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                Cerrar
+              </button>
+            </div>
+          )}
+        </div>
         <MapContainer
           ref={mapRef}
           center={[41.3851, 2.1734]}
           zoom={13}
-          style={{ height: '100%', width: '100%' }}  
+          style={{ height: '100%', width: '100%' }}
           minZoom={13}
           maxZoom={18}
           maxBounds={[[41.2, 2.0], [41.5, 2.3]]}  // Límite para Barcelona
@@ -360,85 +248,23 @@ const RestaurantMap = ({ filteredRestaurants }) => {
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'"
             attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
           />
-          <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
-            <RestaurantMarkers filteredRestaurants={filteredRestaurants} icon={restaurantIcon} />
+          <MarkerClusterGroup iconCreateFunction={ClusterCustomIcon}>
+            <RestaurantMarkers filteredRestaurants={filteredRestaurants} icon={RestaurantIcon} />
           </MarkerClusterGroup>
-  
-          {/* Mostrar los barrios con polígonos */}
-          {showNeighborhoods && (
-            <NeighborhoodPolygons
-              mapRef={mapRef}
-              neighborhoods={neighborhoods}
-              showNeighborhoods={showNeighborhoods}
-              heatmapActive={heatmapActive}
-              restaurantCounts={restaurantCounts}
-              getColorForRestaurantCount={getColorForRestaurantCount}
-              clearLayers={clearLayers}
-            />
-          )}
-  
-          {/* Mostrar las categorías populares en los barrios */}
-          {showPopularCategories && neighborhoods.map((neighborhood, index) => (
-            neighborhood.Geometry && neighborhood.Geometry.coordinates && (
-              <Polygon
-                key={index}
-                positions={neighborhood.Geometry.coordinates[0].map(coord => [coord[1], coord[0]])}
-                color="blue"
-                fillOpacity={0.3}
-              >
-                <Popup>
-                  <div>
-                    <b>Barrio:</b> {neighborhood.Nombre}<br />
-                    <b>Categoría Popular:</b> {getPopularCategoryForBarrio(neighborhood.Nombre)}
-                  </div>
-                </Popup>
-              </Polygon>
-            )
-          ))}
-  
-          {/* Leyenda del heatmap */}
-          {heatmapActive && <HeatmapLegend />}
-  
-         
+
+          {/* Añadir la leyenda del heatmap */}
+          <HeatmapLegend map={mapRef.current} />
+
         </MapContainer>
+        <div style={{ width: '100%' }}>
+          {/* HeatmapCharts - los gráficos debajo del mapa */}
+          <HeatmapCharts filteredRestaurants={filteredRestaurants}
+           /> {/* Añadimos el componente de gráficos */}
+        </div>
+
       </div>
-  
-      {/* Gráfico de Heatmap por tipo de cocina - Debajo del mapa */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', width: '100%' }}>
-        <HeatmapByCuisine filteredRestaurants={filteredByCuisine} neighborhoods={neighborhoods} />
-      </div>
-  
-      {/* Indicadores de viabilidad */}
-      {showViabilityIndicators && <ViabilityIndicatorsChart viabilityData={viabilityData} selectedFilter={filteredRestaurants.length ? filteredRestaurants[0].Barrio : ''} />}
-  
-      {/* Categorías populares */}
-      {showPopularCategories && <PopularCategoriesChart categoryCountsByBarrio={categoryCountsByBarrio} />}
-  
-      {/* Select de transporte */}
-      {showTransport && (
-        <select
-          value={selectedTransportType}
-          onChange={(e) => setSelectedTransportType(e.target.value)}
-          style={{
-            marginBottom: '10px',
-            marginLeft: '15px',
-            padding: '10px',
-            borderRadius: '10px',
-            border: '1px solid #ccc',
-            fontSize: '16px',
-          }}
-        >
-          <option value="">Todos los transportes</option>
-          <option value="BUS">BUS</option>
-          <option value="METRO">METRO</option>
-          <option value="FGC">FGC</option>
-          <option value="RENFE">RENFE</option>
-        </select>
-      )}
-    </div>
+    </>
   );
-  
-  
-}
+};
 
 export default RestaurantMap;

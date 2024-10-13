@@ -29,3 +29,13 @@ class DemographicService:
             query['Distribución habitación por casas'] = household_size
         demographics = list(self.demographics_collection.find(query, {'_id': 0}))
         return jsonify(demographics)
+    
+    
+        
+    def get_neigborhoods(self):
+        try:
+            barrios = self.demographics_collection.find({}, {"_id": 0, "Nombre": 1, "Geometry": 1})
+            return list(barrios)
+        except Exception as e:
+            logging.error(f"Error fetching neighborhoods: {str(e)}")
+            raise e
