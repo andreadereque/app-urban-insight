@@ -10,7 +10,7 @@ const Filters = ({
   barrios, categoriasCocina, categoriasPrecio
 }) => (
   <div className="filter-container">
-    <BarrioFilter class="text-file-custom" selectedBarrios={selectedBarrios} setSelectedBarrios={setSelectedBarrios} barrios={barrios} />
+    <BarrioFilter  selectedBarrios={selectedBarrios} setSelectedBarrios={setSelectedBarrios} barrios={barrios} />
 
       <CustomFilter selectedValue={selectedCategoriaCocina} setSelectedValue={setSelectedCategoriaCocina} options={categoriasCocina} placeholder="Tipo de Cocina" />
       <CustomFilter selectedValue={selectedNota} setSelectedValue={setSelectedNota} options={['1-2', '2-3', '3-4', '4-5']} placeholder="Nota" />
