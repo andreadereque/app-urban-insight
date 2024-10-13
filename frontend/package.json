@@ -16,6 +16,7 @@
     "chartjs-plugin-datalabels": "^2.2.0",
     "core-js": "^3.38.1",
     "d3": "^7.9.0",
+    "eslint": "^8.57.1",
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",
     "leaflet.awesome-markers": "^2.0.5",

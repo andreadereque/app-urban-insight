@@ -44,7 +44,7 @@ const BarrioFilter = ({ selectedBarrios, setSelectedBarrios, barrios }) => {
   }, []);
 
   return (
-    <div className="col-md-4" ref={dropdownRef} style={{ position: 'relative', width: '200px' }}>
+    <div className="col-md-4" ref={dropdownRef} style={{ position: 'relative', width: '400px' }}>
       <input
         type="text"
         className="filter-select"
@@ -101,6 +101,7 @@ const BarrioFilter = ({ selectedBarrios, setSelectedBarrios, barrios }) => {
             padding: '5px 10px',
             margin: '5px',
             position: 'relative',
+            
           }}>
             {barrio}
             <button

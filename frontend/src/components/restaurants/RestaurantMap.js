@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polygon } from 'react-leaflet';
+import { MapContainer, TileLayer, Popup, Polygon } from 'react-leaflet';
 import MarkerClusterGroup from '@changey/react-leaflet-markercluster';
 import axios from 'axios';
 import L from 'leaflet';
@@ -10,9 +10,7 @@ import restIconPath from '../../assets/icons/rest_icon.png';
 import busIconPath from '../../assets/icons/bus.png';
 import PopularCategoriesChart from './PopularCategoriesChart';
 import ViabilityIndicatorsChart from './ViabilityIndicatorsChart';
-import CuisineSelector from './CuisineSelector';
 import HeatmapByCuisine from './HeatmapByCuisine';
-import HeatmapChart from './HeatmapByCuisine';
 
 const restaurantIcon = new L.Icon({
   iconUrl: restIconPath,
@@ -62,7 +60,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
   const transportLayersRef = useRef([]);
   const [showViabilityIndicators, setShowViabilityIndicators] = useState(false);
   const [viabilityData, setViabilityData] = useState([]);
-  const [selectedCuisine, setSelectedCuisine] = useState('');
+  const [selectedCuisine] = useState('');
   const [filteredByCuisine, setFilteredByCuisine] = useState(filteredRestaurants);
 
   useEffect(() => {
@@ -230,9 +228,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
   }, [selectedCuisine, filteredRestaurants]);
 
 
-  const togglePopularCategories = () => {
-    setShowPopularCategories(!showPopularCategories);
-  };
+
 
 
   return (
