@@ -102,7 +102,8 @@ class RestaurantService:
                     "categoría_cocina": {"$push": "$Categoría Cocina"},
                     "notas": {"$push": "$Nota"},
                     "categoría_precio": {"$push": "$Categoría Precio"},
-                    "accesibilidad": {"$push": "$Accesibilidad"}
+                    "accesibilidad": {"$push": "$Accesibilidad"},
+                    "total_restaurants": {"$sum": 1}  # Count the number of restaurants
                 }
             }
         ]
@@ -115,18 +116,32 @@ class RestaurantService:
             return jsonify({"error": "No nearby competitors found"}), 404
 
         restaurant_data = result[0]
-        number_of_restaurants = len(restaurant_data.get("notas", []))
+        number_of_restaurants = restaurant_data.get("total_restaurants", 0)
         category_histogram = self.calculate_histogram(restaurant_data.get("categoría_cocina", []))
         price_histogram = self.calculate_histogram(restaurant_data.get("categoría_precio", []))
         mark_histogram = self.calculate_histogram(restaurant_data.get("notas", []), intervals=[x * 0.5 for x in range(11)])
-        accessibility_histogram = self.calculate_histogram(restaurant_data.get("accesibilidad", []), intervals=[x for x in range(11)])
+
+        # Calculate minimum, average, and maximum for accessibility
+        accesibilidad_values = restaurant_data.get("accesibilidad", [])
+        accesibilidad_values = [x for x in accesibilidad_values if x is not None]  # Filtrar valores None
+        if accesibilidad_values:
+            min_accesibilidad = min(accesibilidad_values)
+            avg_accesibilidad = sum(accesibilidad_values) / len(accesibilidad_values)
+            max_accesibilidad = max(accesibilidad_values)
+        else:
+            min_accesibilidad = avg_accesibilidad = max_accesibilidad = None
+
 
         return jsonify({
             "Categoria Cocina": category_histogram,
             "Numero de restaurantes": number_of_restaurants,
             "Precio": price_histogram,
             "Nota": mark_histogram,
-            "Accesibilidad": accessibility_histogram
+            "Accesibilidad": {
+                "min": min_accesibilidad,
+                "avg": avg_accesibilidad,
+                "max": max_accesibilidad
+            }
         })
 
     def calculate_histogram(self, data: list, intervals=None):

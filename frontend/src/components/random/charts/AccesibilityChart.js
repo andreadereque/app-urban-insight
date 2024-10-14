@@ -6,10 +6,11 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Title, Toolti
 // Registra el plugin
 ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, ChartDataLabels);
 
-const AccesibilityChart = ({ data }) => {
+const AccesibilityChart = ({ data , accesibility}) => {
   const labels = Object.keys(data);
   const values = Object.values(data);
   console.log("hola aqui esta la accesibilita",data)
+  console.log(accesibility)
 
   const chartData = {
     labels,
@@ -39,7 +40,7 @@ const AccesibilityChart = ({ data }) => {
 
   return (
     <div>
-      <h4>Accesibilidad</h4>
+    
       <Bar data={chartData} options={chartOptions} />
     </div>
   );

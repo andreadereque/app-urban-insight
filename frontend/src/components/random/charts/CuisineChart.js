@@ -57,13 +57,7 @@ const CuisineChart = ({ data }) => {
       <h4>Categoría Cocina</h4>
       <Bar data={chartData} options={chartOptions} />
     
-    {generalLabel && generalValue && (
-        <div>
-          <h4>{generalLabel}</h4>
-          <p>Número de Restaurantes: {generalValue}</p>
-        </div>
-      )}
-      </div>
+    </div>
   );
 };
 

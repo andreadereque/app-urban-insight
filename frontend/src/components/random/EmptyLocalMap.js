@@ -11,6 +11,7 @@ import '../../styles/EmptyLocalFilters.css'; // Asegúrate de tener este archivo
 import '../../styles/EmptyLocalMaps.css'; // Asegúrate de tener este archivo CSS
 import axios from 'axios';
 import CompetitorChart from './CompetitorChart'; // Nuevo componente para gráficos
+import { json } from 'react-router-dom';
 
 // Función para crear iconos personalizados para los clústeres
 const createClusterCustomIcon = (cluster) => {
@@ -42,6 +43,8 @@ const EmptyLocalsMap = () => {
   const [filters, setFilters] = useState({ barrio: '', precioMin: '', precioMax: '' });
   const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
   const [competitorsData, setCompetitorsData] = useState(null);
+  const [localAccessibility, setLocalAccessibility] = useState(null);
+
 
   const emptyLocalIcon = new L.Icon({
     iconUrl: idealistaIconPath,
@@ -117,21 +120,28 @@ const EmptyLocalsMap = () => {
       console.error('Error al obtener competidores cercanos:', error);
     }
   };
+ 
   
   const handleMarkerClick = (local) => {
-    console.log(local)
-    const coordinates = local["Coordinates"] || [];  // Asegúrate de usar "Coordinates" en lugar de Geometry.coordinates
-    fetchNeighbourCompetitors(coordinates);  // Llamas a la función con las coordenadas
-    console.log("local", local);
-    console.log("coordi", coordinates);
+    console.log(local);
+    const coordinates = local["Coordinates"] || []; // Asegúrate de usar "Coordinates" en lugar de Geometry.coordinates
+    fetchNeighbourCompetitors(coordinates); 
+    const accesibilidad1 = local['Accesibilidad']// Llamas a la función con las coordenadas
+    setLocalAccessibility(accesibilidad1); // Guardas la accesibilidad del local seleccionado
 
-};
+  };
+  useEffect(() => {
+    if (localAccessibility !== null) {
+      console.log('Local Accessibility updated:', localAccessibility);
+    }
+  }, [localAccessibility]);
+  
 
 
 const filteredLocals = locals.filter((local) => {
   const matchesBarrio = filters.barrio ? local.Barrio === filters.barrio : true;
-  const matchesPrecioMin = filters.precioMin ? parseFloat(local.Precio) >= parseFloat(filters.precioMin) : true;
-  const matchesPrecioMax = filters.precioMax ? parseFloat(local.Precio) <= parseFloat(filters.precioMax) : true;
+  const matchesPrecioMin = filters.precioMin ? parseFloat(local['Precio total (€)']) >= parseFloat(filters.precioMin) : true;
+  const matchesPrecioMax = filters.precioMax ? parseFloat(local['Precio total (€)']) <= parseFloat(filters.precioMax) : true;
   return matchesBarrio && matchesPrecioMin && matchesPrecioMax;
 });
 
@@ -156,18 +166,20 @@ const filteredLocals = locals.filter((local) => {
             icon={restaurantIcon}
           >
             <Popup>
-              <h3>{restaurant.name}</h3>
+            <h3>{restaurant.name}</h3>
               <p>Tipo: {restaurant.type}</p>
               <p>Rating: {restaurant.rating}</p>
+              <p>Precio: {restaurant.price}</p>
             </Popup>
           </Marker>
         ))}
       </MapContainer>
       {competitorsData && (
-        <div className="sidebar">
-          <CompetitorChart data={competitorsData} />
-        </div>
-      )}
+  <div className="sidebar">
+    <CompetitorChart data={competitorsData} accessibility={localAccessibility} />
+  </div>
+)}
+
     </div>
   </>
 );

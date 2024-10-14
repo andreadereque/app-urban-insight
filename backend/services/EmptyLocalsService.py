@@ -18,7 +18,8 @@ class EmptyLocalsService:
             'Superficie (m2)': 1,
             'Precio (€/m2)': 1,
             'Barrio': 1,
-            'Geometry.coordinates': 1
+            'Geometry.coordinates': 1,
+            'Accesibilidad':1,
         })
         locals_list = []
         for local in empty_locals:
@@ -29,6 +30,7 @@ class EmptyLocalsService:
             superficie = local.get("Superficie (m2)")
             precio_por_m2 = local.get("Precio (€/m2)")
             barrio = local.get("Barrio")
+            accesibilidad = local.get("Accesibilidad")
             if not direccion or direccion.strip() == "" or not coordenadas or len(coordenadas) != 2 or not titulo:
                 continue
             precio_num = self.preprocess_price(precio_total)
@@ -41,7 +43,8 @@ class EmptyLocalsService:
                 "Superficie (m2)": superficie,
                 "Precio (€/m2)": precio_por_m2,
                 "Barrio": barrio,
-                "Coordinates": coordenadas
+                "Coordinates": coordenadas,
+                "Accesibilidad":accesibilidad
             })
         logging.info(f"Total de locales válidos: {len(locals_list)}")
         return jsonify(locals_list)
