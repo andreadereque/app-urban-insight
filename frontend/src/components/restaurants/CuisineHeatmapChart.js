@@ -15,10 +15,10 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
             return;
         }
 
-        // Filter restaurants based on the selected barrio
+        // Filtrar restaurantes según el barrio seleccionado
         const restaurantsInBarrio = filteredRestaurants.filter(restaurant => restaurant.Barrio === selectedBarrio);
 
-        // Count the restaurants by cuisine type
+        // Contar los restaurantes por tipo de cocina
         const cuisineCounts = restaurantsInBarrio.reduce((acc, restaurant) => {
             const cuisine = restaurant["Categoría Cocina"];
             if (!acc[cuisine]) acc[cuisine] = 0;
@@ -33,7 +33,7 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
         const maxCount = Math.max(...cuisineCountsArray);
         setMaxCuisineCount(maxCount);
 
-        // Set the chart data for the cuisines
+        // Asignar los datos al gráfico de cocina
         setCuisineChartData({
             labels: cuisineLabels,
             datasets: [
@@ -47,7 +47,7 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
         });
     }, [filteredRestaurants, selectedBarrio]);
 
-    // Function to get the color based on value and max value
+    // Función para obtener el color basado en el valor máximo
     const getHeatmapColor = (value, maxValue) => {
         const ratio = value / maxValue;
         if (ratio > 0.9) return 'rgba(255, 69, 0, 0.8)';
@@ -112,7 +112,7 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
                     }}
                 />
             ) : (
-                <p>No data available for selected barrio</p>
+                <p>No hay datos disponibles para el barrio seleccionado</p>
             )}
         </div>
     );

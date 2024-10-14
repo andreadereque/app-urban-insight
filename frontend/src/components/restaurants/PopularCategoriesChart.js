@@ -8,7 +8,6 @@ const PopularCategoriesChart = ({ categoryCountsByBarrio }) => {
   }, [categoryCountsByBarrio]);
 
   const barrios = Object.keys(categoryCountsByBarrio); // Nombres de los barrios
-  const popularCategories = barrios.map(barrio => categoryCountsByBarrio[barrio]?.[0] || "No disponible"); // Categoría más popular
   const popularCounts = barrios.map(barrio => categoryCountsByBarrio[barrio]?.[1] || 0); // Cantidad de restaurantes en esa categoría
 
   const data = {

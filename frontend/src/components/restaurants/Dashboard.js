@@ -6,7 +6,7 @@ import TreeMapComponent from './TreeMapComponent';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, ChartDataLabels);
 
-const HeatmapCharts = ({ filteredRestaurants }) => {
+const Dashboard = ({ filteredRestaurants }) => {
     const [topChartData, setTopChartData] = useState(null);
     const [maxTopCount, setMaxTopCount] = useState(null);
     const [treeMapData, setTreeMapData] = useState(null);
@@ -149,17 +149,22 @@ const HeatmapCharts = ({ filteredRestaurants }) => {
             </div>
 
             {/* Dropdown para seleccionar el Barrio */}
-            <div style={{ width: '100%', marginTop: '20px' }}>
-                <label htmlFor="barrio-select">Seleccionar Barrio: </label>
-                <select id="barrio-select" onChange={handleBarrioChange} value={selectedBarrio}>
-                    <option value="">Seleccione un barrio</option>
-                    {[...new Set(filteredRestaurants.map(restaurant => restaurant.Barrio))].map(barrio => (
-                        <option key={barrio} value={barrio}>
-                            {barrio}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            <div className="select-container">
+    <label htmlFor="barrio-select" className="select-label">Seleccionar Barrio: </label>
+    <select 
+        id="barrio-select" 
+        className="select-dropdown" 
+        onChange={handleBarrioChange} 
+        value={selectedBarrio}
+    >
+        <option value="">Seleccione un barrio</option>
+        {[...new Set(filteredRestaurants.map(restaurant => restaurant.Barrio))].map(barrio => (
+            <option key={barrio} value={barrio}>
+                {barrio}
+            </option>
+        ))}
+    </select>
+</div>
 
             {/* Heatmap de Tipos de Cocina */}
             {selectedBarrio && <CuisineHeatmapChart filteredRestaurants={filteredRestaurants} selectedBarrio={selectedBarrio} />}
@@ -373,4 +378,4 @@ const styles = {
     },
 };
 
-export default HeatmapCharts;
+export default Dashboard;

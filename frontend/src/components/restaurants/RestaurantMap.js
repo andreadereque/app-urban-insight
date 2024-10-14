@@ -9,7 +9,7 @@ import RestaurantIcon from './Icons/RestaurantIcon';
 import TransportIcon from './Icons/TransportIcon';
 import HeatmapLegend from './HeatmapLegend'; // Importar la leyenda
 import L from 'leaflet';
-import HeatmapCharts from './HeatmapByCuisine';
+import Dashboard from './Dashboard';
 
 
 const RestaurantMap = ({ filteredRestaurants }) => {
@@ -258,7 +258,7 @@ const RestaurantMap = ({ filteredRestaurants }) => {
         </MapContainer>
         <div style={{ width: '100%' }}>
           {/* HeatmapCharts - los gráficos debajo del mapa */}
-          <HeatmapCharts filteredRestaurants={filteredRestaurants}
+          <Dashboard filteredRestaurants={filteredRestaurants}
            /> {/* Añadimos el componente de gráficos */}
         </div>
 
