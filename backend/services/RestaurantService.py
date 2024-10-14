@@ -195,3 +195,8 @@ class RestaurantService:
             restaurant_count_by_neighborhood[neighborhood['Nombre']] = count
 
         return restaurant_count_by_neighborhood
+    
+
+    
+    def get_restaurant_types(self):
+        return self.restaurants_collection.distinct('Categoría Cocina')

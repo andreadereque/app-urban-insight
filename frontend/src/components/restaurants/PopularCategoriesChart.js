@@ -4,7 +4,6 @@ import { Bar } from 'react-chartjs-2';
 const PopularCategoriesChart = ({ categoryCountsByBarrio }) => {
   // Revisamos los datos para asegurarnos de que están correctos
   useEffect(() => {
-    console.log("Datos de categorías por barrio:", categoryCountsByBarrio);
   }, [categoryCountsByBarrio]);
 
   const barrios = Object.keys(categoryCountsByBarrio); // Nombres de los barrios

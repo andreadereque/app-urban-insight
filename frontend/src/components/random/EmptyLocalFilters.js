@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../styles/EmptyLocalFilters.css'; // Cambia esta línea
 
-const EmptyLocalFilters = ({ barrios, onFilterChange }) => {
+const EmptyLocalFilters = ({ barrios, onFilterChange, restaurantTypes }) => {
   return (
     <div className="filter-container">
       <label className="filter-label">
@@ -15,6 +15,17 @@ const EmptyLocalFilters = ({ barrios, onFilterChange }) => {
           ))}
         </select>
       </label>
+      <label className="filter-label">
+  Tipo de Restaurante:
+  <select className="filter-select" onChange={(e) => onFilterChange('tipoRestaurante', e.target.value)}>
+    <option value="">Todos</option>
+    {restaurantTypes.map((type, index) => (
+      <option key={index} value={type}>
+        {type}
+      </option>
+    ))}
+  </select>
+</label>
 
       <label className="filter-label">
         Precio Mínimo:

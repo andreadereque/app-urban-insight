@@ -3,7 +3,6 @@ import { Marker, Popup } from 'react-leaflet';
 
 const EmptyLocalMarker = ({ local, icon, onPopupOpen, onMarkerClick }) => {
   const coordinates = local.Coordinates || [];
-  console.log('ayudaaaaa', local);
 
   if (coordinates.length === 2) {
     const [lng, lat] = coordinates;
@@ -29,7 +28,7 @@ const EmptyLocalMarker = ({ local, icon, onPopupOpen, onMarkerClick }) => {
         >
           <Popup>
             <h2 style={{ margin: '0', fontSize: '16px' }}>{local.Título}</h2>
-            <p style={{ margin: '0' }}>Precio total: {local['Precio total (€)']} €</p>
+            <p style={{ margin: '0' }}>Precio total: {local['Precio total (€)'] * 1000} €</p>
             <p>Precio por m²: {local['Precio (€/m2)']} €/m²</p>
             <p>Superficie: {local['Superficie (m2)']} m²</p>
             <p>Accesibilidad: {parseFloat(local.Accesibilidad).toFixed(2)}</p>

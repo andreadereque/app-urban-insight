@@ -100,7 +100,10 @@ def get_restaurant_counts():
         return jsonify({'error': str(e)}), 500
 
     
-
+@app.route('/api/restaurant_types', methods=['GET'])
+def get_restaurant_types():
+    types = restaurant_service.get_restaurant_types()
+    return jsonify(types)
 
 
 if __name__ == '__main__':
