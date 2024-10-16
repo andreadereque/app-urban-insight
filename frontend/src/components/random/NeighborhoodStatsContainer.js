@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import LocalCountMap from './LocalCountMap';
-import LocalCountBarChart from './LocalCountBarChart';
+import LocalCountMap from './charts/locals/LocalCountMap';
+import LocalCountBarChart from './charts/locals/LocalCountBarChart';
 import axios from 'axios';
 import '../../styles/NeighborhoodStatsContainer.css';
 

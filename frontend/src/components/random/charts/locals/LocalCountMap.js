@@ -3,7 +3,7 @@ import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import proj4 from 'proj4';
 import L from 'leaflet';
-import '../../styles/Tooltip.css';
+import '../../../../styles/Tooltip.css';
 
 const LocalCountMap = ({ localCounts, neighborhoods }) => {
   const mapRef = useRef(null);
