@@ -11,8 +11,9 @@ import '../../styles/EmptyLocalFilters.css'; // Asegúrate de tener este archivo
 import '../../styles/EmptyLocalMaps.css'; // Asegúrate de tener este archivo CSS
 import axios from 'axios';
 import CompetitorChart from './CompetitorChart'; // Nuevo componente para gráficos
-import { json } from 'react-router-dom';
+import ClickedLocalDetails from './ClickedLocalDetails'; // Nuevo componente para gráficos
 
+import NeighborhoodStatsContainer from './NeighborhoodStatsContainer';
 // Función para crear iconos personalizados para los clústeres
 const createClusterCustomIcon = (cluster) => {
   const count = cluster.getChildCount();
@@ -44,6 +45,8 @@ const EmptyLocalsMap = () => {
   const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
   const [competitorsData, setCompetitorsData] = useState(null);
   const [localAccessibility, setLocalAccessibility] = useState(null);
+  const [clickedLocalTitle, setClickedLocalTitle] = useState(null); // Nuevo estado para el título
+
 
 
   const emptyLocalIcon = new L.Icon({
@@ -67,7 +70,6 @@ const EmptyLocalsMap = () => {
         const localsResponse = await fetch('http://127.0.0.1:5000/api/empty_locals');
         const localsData = await localsResponse.json();
         setLocals(localsData);
-        console.log('xxxxx',localsData)
 
         const demographicsResponse = await fetch('http://127.0.0.1:5000/api/demographics');
         const demographicsData = await demographicsResponse.json();
@@ -95,7 +97,6 @@ const EmptyLocalsMap = () => {
       }
       const data = await response.json();
       setNearbyRestaurants(data);
-      console.log('Restaurantes cercanos:', data);
     } catch (error) {
       console.error('Error fetching nearby restaurants:', error);
     }
@@ -105,7 +106,6 @@ const EmptyLocalsMap = () => {
   const fetchNeighbourCompetitors = async (coordinates) => {
     try {
       const [lon, lat] = coordinates; // Asegúrate de extraer latitud y longitud correctamente
-      console.log("tttttttttttt", [lon, lat])
       // Realiza la solicitud GET con los parámetros adecuados
       const response = await axios.get('http://127.0.0.1:5000/api/neighbours_competitors', {
         params: {
@@ -115,7 +115,6 @@ const EmptyLocalsMap = () => {
       });
       
       setCompetitorsData(response.data);
-      console.log("dataaaaaa", response.data)
     } catch (error) {
       console.error('Error al obtener competidores cercanos:', error);
     }
@@ -123,16 +122,16 @@ const EmptyLocalsMap = () => {
  
   
   const handleMarkerClick = (local) => {
-    console.log(local);
     const coordinates = local["Coordinates"] || []; // Asegúrate de usar "Coordinates" en lugar de Geometry.coordinates
     fetchNeighbourCompetitors(coordinates); 
     const accesibilidad1 = local['Accesibilidad']// Llamas a la función con las coordenadas
     setLocalAccessibility(accesibilidad1); // Guardas la accesibilidad del local seleccionado
+    setClickedLocalTitle(local['Título']); // Almacenar el título del local clicado
+
 
   };
   useEffect(() => {
     if (localAccessibility !== null) {
-      console.log('Local Accessibility updated:', localAccessibility);
     }
   }, [localAccessibility]);
   
@@ -181,6 +180,10 @@ const filteredLocals = locals.filter((local) => {
 )}
 
     </div>
+    <NeighborhoodStatsContainer />
+
+    <ClickedLocalDetails title={clickedLocalTitle} />
+
   </>
 );
 }

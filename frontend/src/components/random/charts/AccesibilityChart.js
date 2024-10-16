@@ -9,8 +9,6 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, ChartDa
 const AccesibilityChart = ({ data , accesibility}) => {
   const labels = Object.keys(data);
   const values = Object.values(data);
-  console.log("hola aqui esta la accesibilita",data)
-  console.log(accesibility)
 
   const chartData = {
     labels,

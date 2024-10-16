@@ -101,6 +101,45 @@ def get_restaurant_counts():
 
     
 
+@app.route('/api/empty_locals_count_by_neighborhood', methods=['GET'])
+def get_empty_locals_count_by_neighborhood():
+    try:
+        local_counts = empty_local_service.get_empty_locals_count_by_neighborhood()
+        return jsonify(local_counts), 200
+    except Exception as e:
+        logging.error(f"Error counting empty locals by neighborhood: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/empty_locals_average_price', methods=['GET'])
+def get_empty_locals_average_price():
+    try:
+        neighborhood = request.args.get('neighborhood')
+        if not neighborhood:
+            return jsonify({"error": "Missing neighborhood parameter"}), 400
+        
+        average_price = empty_local_service.get_average_price_by_neighborhood(neighborhood)
+        return jsonify({"neighborhood": neighborhood, "average_price": average_price}), 200
+    except Exception as e:
+        logging.error(f"Error calculating average price for neighborhood {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/empty_locals_average_price_by_neighborhood', methods=['GET'])
+def get_empty_locals_average_price_by_neighborhood():
+    try:
+        average_prices = empty_local_service.get_average_price_by_neighborhoods()
+        return jsonify(average_prices), 200
+    except Exception as e:
+        logging.error(f"Error calculating average price by neighborhood: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/neighborhoods_idealista', methods=['GET'])
+def get_neighborhoods_idealista():
+    try:
+        return jsonify(demographics_service.get_neighborhoods_idealista())
+    except Exception as e:
+        logging.error(f"Error fetching neighborhoods: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 
 
 if __name__ == '__main__':

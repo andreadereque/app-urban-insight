@@ -4,6 +4,43 @@ import logging
 from numpy import histogram
 import math
 from collections import Counter
+from pyproj import Proj, Transformer, transform
+
+
+transformer = Transformer.from_crs("EPSG:32631", "EPSG:4326", always_xy=True)
+
+def convert_utm_to_wgs84(coordinates):
+    try:
+        # Verificar si las coordenadas son de tipo polígono o multipolígono
+        if isinstance(coordinates[0], list) and isinstance(coordinates[0][0], list):
+            # Multipolígono
+            logging.info("Converting multipolygon")
+            return [
+                [
+                    [
+                        transformer.transform(easting, northing)
+                        for easting, northing in ring
+                        if isinstance(easting, (int, float)) and isinstance(northing, (int, float))  # Verificar el formato
+                    ]
+                    for ring in polygon
+                ]
+                for polygon in coordinates
+            ]
+        elif isinstance(coordinates[0], list) and len(coordinates[0]) == 2:
+            # Polígono simple
+            logging.info(f"Converting polygon with coordinates: {coordinates}")
+            return [
+                transformer.transform(easting, northing)
+                for easting, northing in coordinates
+                if isinstance(easting, (int, float)) and isinstance(northing, (int, float))  # Verificar el formato
+            ]
+        else:
+            # Si el formato no es válido, registrar el problema
+            logging.error(f"Invalid coordinate format detected: {coordinates}")
+            return []  # Devolver una lista vacía en caso de formato inválido
+    except Exception as e:
+        logging.error(f"Error converting coordinates: {str(e)}")
+        return []  
 
 class DemographicService:
     def __init__(self, mongo):
@@ -39,3 +76,37 @@ class DemographicService:
         except Exception as e:
             logging.error(f"Error fetching neighborhoods: {str(e)}")
             raise e
+        
+
+    
+        
+    def get_neighborhoods_idealista(self):
+        try:
+            barrios = self.demographics_collection.find({}, {"_id": 0, "Nombre": 1, "Geometry": 1})
+            neighborhoods = list(barrios)
+
+            # Convertir las coordenadas de UTM a WGS84 antes de devolver los resultados
+            for barrio in neighborhoods:
+                logging.info(f"Processing neighborhood: {barrio['Nombre']}")
+                logging.info(f"Coordinates before conversion: {barrio['Geometry']['coordinates']}")
+                
+                # Intentar la conversión
+                converted_coords = convert_utm_to_wgs84(barrio['Geometry']['coordinates'])
+                
+                if not converted_coords:
+                    logging.error(f"Failed to convert coordinates for neighborhood: {barrio['Nombre']}")
+                    continue  # Saltar este barrio si la conversión falla
+                
+                barrio['Geometry']['coordinates'] = converted_coords
+                logging.info(f"Coordinates after conversion: {barrio['Geometry']['coordinates']}")
+            
+            # Verificar que los datos son serializables a JSON antes de devolver
+            if isinstance(neighborhoods, list):
+                return jsonify(neighborhoods)  # Asegurar que se está devolviendo un tipo serializable
+            else:
+                logging.error("Neighborhoods data is not serializable")
+                return jsonify({'error': 'Data not serializable'}), 500
+
+        except Exception as e:
+            logging.error(f"Error fetching neighborhoods: {str(e)}")
+            return jsonify({'error': str(e)}), 500

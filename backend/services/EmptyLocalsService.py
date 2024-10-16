@@ -60,3 +60,48 @@ class EmptyLocalsService:
         elif isinstance(precio, (int, float)):
             return precio
         return None
+    
+    def get_empty_locals_count_by_neighborhood(self):
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$Barrio",
+                    "count": {"$sum": 1}
+                }
+            },
+            {
+                "$sort": {"count": -1}
+            }
+        ]
+        results = self.empty_locals_collection.aggregate(pipeline)
+        return [{"Barrio": r["_id"], "count": r["count"]} for r in results]
+    
+    def get_average_price_by_neighborhood(self, neighborhood):
+        pipeline = [
+            {"$match": {"Barrio": neighborhood}},
+            {
+                "$group": {
+                    "_id": None,
+                    "average_price": {"$avg": "$Precio total (€)"}
+                }
+            }
+        ]
+        result = list(self.empty_locals_collection.aggregate(pipeline))
+        if result:
+            return result[0]["average_price"]
+        return 0
+    
+    def get_average_price_by_neighborhoods(self):
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$Barrio",
+                    "average_price": {"$avg": "$Precio total (€)"}
+                }
+            },
+            {
+                "$sort": {"average_price": -1}
+            }
+        ]
+        results = self.empty_locals_collection.aggregate(pipeline)
+        return [{"Barrio": r["_id"], "average_price": r["average_price"]} for r in results]

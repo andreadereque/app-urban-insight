@@ -8,7 +8,6 @@ Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
   const data = selectedNeighborhood || barcelonaData;
-  console.log('Datos del barrio seleccionado o Barcelona:', data);  // Debugging
 
   if (!data) return null;
 
@@ -24,10 +23,6 @@ const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
   const distribucionInmigracion = data.distribucionInmigracion || data['Distribución immigración'];
   const distribucionHabitaciones = data.distribucionHabitaciones || data['Distribución habitación por casas'];
 
-  // Log para depurar
-  console.log('Distribución de edad:', distribucionEdad);
-  console.log('Distribución de inmigración:', distribucionInmigracion);
-  console.log('Distribución por habitaciones:', distribucionHabitaciones);
 
   // Age Distribution Chart
   const barDataEdad = {
