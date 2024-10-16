@@ -134,14 +134,16 @@ const LocalCountMap = ({ localCounts, neighborhoods }) => {
       updateTooltipVisibility(mapRef.current.getZoom());
 
       // Añadir la leyenda al mapa después de cargarlo
-      addLegend(mapRef.current);
+      if (!document.querySelector('.cute-legend')) {
+        addLegend(mapRef.current);
+      }
     }
   }, [neighborhoods, localCounts]);  // Ejecutar cuando se carguen los barrios o cambien los locales
 
   return (
     <>
-      <div style={{ height: '400px', width: '50%' }}>
-        <MapContainer
+<div style={{ height: '100%', width: '100%' }}>
+<MapContainer
           ref={mapRef}
           center={[41.3851, 2.1734]}  // Centro de Barcelona
           zoom={initialZoom}  // Zoom inicial

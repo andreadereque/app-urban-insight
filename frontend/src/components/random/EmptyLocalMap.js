@@ -180,7 +180,12 @@ const filteredLocals = locals.filter((local) => {
 )}
 
     </div>
+    <div>
+    <h2>Estadísticas de Locales por Barrio</h2>
+
     <NeighborhoodStatsContainer />
+
+    </div>
 
     <ClickedLocalDetails title={clickedLocalTitle} />
 
