@@ -101,7 +101,7 @@ const EmptyLocalsMap = () => {
       console.error('Error fetching nearby restaurants:', error);
     }
   };
-  
+
 
   const fetchNeighbourCompetitors = async (coordinates) => {
     try {
@@ -113,17 +113,17 @@ const EmptyLocalsMap = () => {
           lon: lon,
         },
       });
-      
+
       setCompetitorsData(response.data);
     } catch (error) {
       console.error('Error al obtener competidores cercanos:', error);
     }
   };
- 
-  
+
+
   const handleMarkerClick = (local) => {
     const coordinates = local["Coordinates"] || []; // Asegúrate de usar "Coordinates" en lugar de Geometry.coordinates
-    fetchNeighbourCompetitors(coordinates); 
+    fetchNeighbourCompetitors(coordinates);
     const accesibilidad1 = local['Accesibilidad']// Llamas a la función con las coordenadas
     setLocalAccessibility(accesibilidad1); // Guardas la accesibilidad del local seleccionado
     setClickedLocalTitle(local['Título']); // Almacenar el título del local clicado
@@ -134,63 +134,64 @@ const EmptyLocalsMap = () => {
     if (localAccessibility !== null) {
     }
   }, [localAccessibility]);
-  
 
 
-const filteredLocals = locals.filter((local) => {
-  const matchesBarrio = filters.barrio ? local.Barrio === filters.barrio : true;
-  const matchesPrecioMin = filters.precioMin ? parseFloat(local['Precio total (€)']) >= parseFloat(filters.precioMin) : true;
-  const matchesPrecioMax = filters.precioMax ? parseFloat(local['Precio total (€)']) <= parseFloat(filters.precioMax) : true;
-  return matchesBarrio && matchesPrecioMin && matchesPrecioMax;
-});
+
+  const filteredLocals = locals.filter((local) => {
+    const matchesBarrio = filters.barrio ? local.Barrio === filters.barrio : true;
+    const matchesPrecioMin = filters.precioMin ? parseFloat(local['Precio total (€)']) >= parseFloat(filters.precioMin) : true;
+    const matchesPrecioMax = filters.precioMax ? parseFloat(local['Precio total (€)']) <= parseFloat(filters.precioMax) : true;
+    return matchesBarrio && matchesPrecioMin && matchesPrecioMax;
+  });
 
 
   const barrios = [...new Set(locals.map((local) => local.Barrio))].filter(Boolean);
 
- return (
-  <>
-    <EmptyLocalFilters barrios={barrios} onFilterChange={handleFilterChange} />
-    <div className="map-container">
-      <MapContainer center={[41.3851, 2.1734]} zoom={13} style={{ height: '100%', width: '100%' }}>
-        <MapController neighborhoods={neighborhoods} />
-        {typeof MarkerClusterGroup !== 'undefined' && (
-          <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon} showCoverageOnHover={false}>
-            <EmptyLocalMarkers filteredLocals={filteredLocals} icon={emptyLocalIcon} onMarkerClick={handleMarkerClick} onPopupOpen={handlePopupOpen} />
-          </MarkerClusterGroup>
+  return (
+    <>
+      <EmptyLocalFilters barrios={barrios} onFilterChange={handleFilterChange} />
+      <p>Al final de esta pestaña encontraras un apartado donde te ira dando informaicón y comparativas acerca los locales seleccionados</p>
+
+      <div className="map-container">
+
+        <MapContainer center={[41.3851, 2.1734]} zoom={13} style={{ height: '100%', width: '100%' }}>
+          <MapController neighborhoods={neighborhoods} />
+          {typeof MarkerClusterGroup !== 'undefined' && (
+            <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon} showCoverageOnHover={false}>
+              <EmptyLocalMarkers filteredLocals={filteredLocals} icon={emptyLocalIcon} onMarkerClick={handleMarkerClick} onPopupOpen={handlePopupOpen} />
+            </MarkerClusterGroup>
+          )}
+          {nearbyRestaurants.map((restaurant, index) => (
+            <Marker
+              key={index}
+              position={[restaurant.lat, restaurant.lon]}
+              icon={restaurantIcon}
+            >
+              <Popup>
+                <h3>{restaurant.name}</h3>
+                <p>Tipo: {restaurant.type}</p>
+                <p>Rating: {restaurant.rating}</p>
+                <p>Precio: {restaurant.price}</p>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+        {competitorsData && (
+          <div className="sidebar">
+            <CompetitorChart data={competitorsData} accessibility={localAccessibility} />
+          </div>
         )}
-        {nearbyRestaurants.map((restaurant, index) => (
-          <Marker
-            key={index}
-            position={[restaurant.lat, restaurant.lon]}
-            icon={restaurantIcon}
-          >
-            <Popup>
-            <h3>{restaurant.name}</h3>
-              <p>Tipo: {restaurant.type}</p>
-              <p>Rating: {restaurant.rating}</p>
-              <p>Precio: {restaurant.price}</p>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-      {competitorsData && (
-  <div className="sidebar">
-    <CompetitorChart data={competitorsData} accessibility={localAccessibility} />
-  </div>
-)}
 
-    </div>
-    <div>
-    <h2>Estadísticas de Locales por Barrio</h2>
+      </div>
+      <div>
+        <h2>Estadísticas de Locales por Barrio</h2>
+        <NeighborhoodStatsContainer />
+      </div>
+      <br /> 
+      <ClickedLocalDetails title={clickedLocalTitle} infoNearRestaurants={nearbyRestaurants} />
 
-    <NeighborhoodStatsContainer />
-
-    </div>
-
-    <ClickedLocalDetails title={clickedLocalTitle} />
-
-  </>
-);
+    </>
+  );
 }
 
 export default EmptyLocalsMap;

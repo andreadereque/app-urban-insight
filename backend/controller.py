@@ -140,6 +140,25 @@ def get_neighborhoods_idealista():
         logging.error(f"Error fetching neighborhoods: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/restaurant_price_categories', methods=['GET'])
+def get_price_categories():
+    try:
+        # Obtener todas las categorías de precios sin duplicados
+        price_categories = restaurant_service.get_price_categories()
+        return jsonify(price_categories), 200
+    except Exception as e:
+        logging.error(f"Error fetching price categories: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/restaurant_cuisine_categories', methods=['GET'])
+def get_cuisine_categories():
+    try:
+        # Obtener todas las categorías de cocina sin duplicados
+        cuisine_categories = restaurant_service.get_cuisine_categories()
+        return jsonify(cuisine_categories), 200
+    except Exception as e:
+        logging.error(f"Error fetching cuisine categories: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

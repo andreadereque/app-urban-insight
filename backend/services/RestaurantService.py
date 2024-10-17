@@ -34,9 +34,9 @@ class RestaurantService:
                 "name": restaurant["Nombre"],
                 "lat": restaurant["Geometry"]["coordinates"][1],
                 "lon": restaurant["Geometry"]["coordinates"][0],
-                "type": restaurant.get("Tipo", "N/A"),
+                "type": restaurant.get("Categoría Cocina", "N/A"),
                 "rating": restaurant.get("Nota", "N/A"),
-                "price": restaurant.get("Precio", "N/A")
+                "price": restaurant.get("Categoría Precio", "N/A")
             }
             for restaurant in nearby_restaurants
         ]
@@ -195,3 +195,24 @@ class RestaurantService:
             restaurant_count_by_neighborhood[neighborhood['Nombre']] = count
 
         return restaurant_count_by_neighborhood
+    
+    def get_price_categories(self):
+        # Usamos aggregate para obtener los valores únicos de la categoría de precio
+        pipeline = [
+            {"$group": {"_id": "$Categoría Precio"}},  # Agrupamos por categoría de precio
+            {"$sort": {"_id": 1}}  # Ordenamos alfabéticamente
+        ]
+        results = list(self.restaurants_collection.aggregate(pipeline))
+        # Extraer solo el valor de "_id", que es la categoría de precio
+        price_categories = [result["_id"] for result in results]
+        return price_categories
+    def get_cuisine_categories(self):
+        # Usamos aggregate para obtener los valores únicos de la categoría de cocina
+        pipeline = [
+            {"$group": {"_id": "$Categoría Cocina"}},  # Agrupamos por categoría de cocina
+            {"$sort": {"_id": 1}}  # Ordenamos alfabéticamente
+        ]
+        results = list(self.restaurants_collection.aggregate(pipeline))
+        # Extraer solo el valor de "_id", que es la categoría de cocina
+        cuisine_categories = [result["_id"] for result in results]
+        return cuisine_categories

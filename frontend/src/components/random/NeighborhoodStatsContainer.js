@@ -17,7 +17,6 @@ const NeighborhoodStatsContainer = () => {
             try {
                 const response = await axios.get('http://127.0.0.1:5000/api/empty_locals_count_by_neighborhood');
                 setLocalCounts(response.data);
-                console.log(response.data)
 
             } catch (error) {
                 console.error('Error fetching local counts:', error);
@@ -36,7 +35,6 @@ const NeighborhoodStatsContainer = () => {
             try {
                 const response = await axios.get('http://127.0.0.1:5000/api/empty_locals_average_price_by_neighborhood');
                 setLocalPrices(response.data);
-                console.log(response.data)
             } catch (error) {
                 console.error('Error fetching local prices:', error);
             }
