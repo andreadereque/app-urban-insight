@@ -38,7 +38,7 @@ const RestaurantTypeChart = ({ infoNearRestaurants }) => {
 
   return (
     <div style={{ width: '100%', height: '400px', marginTop: '20px' }}>
-      <h4>Distribución de tipos de restaurante</h4>
+      <h4>Distribución de tipos de restaurante en este barrio</h4>
       <Bar data={data} options={options} />
     </div>
   );

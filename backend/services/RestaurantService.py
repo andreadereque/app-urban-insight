@@ -206,13 +206,49 @@ class RestaurantService:
         # Extraer solo el valor de "_id", que es la categoría de precio
         price_categories = [result["_id"] for result in results]
         return price_categories
-    def get_cuisine_categories(self):
-        # Usamos aggregate para obtener los valores únicos de la categoría de cocina
+    
+    def get_restaurant_count_by_neighborhood(self, neighborhood_name):
+        count = self.restaurants_collection.count_documents({"Barrio": neighborhood_name})
+        return count
+
+
+
+    def get_top_5_cuisine_types_by_neighborhood(self, neighborhood_name):
         pipeline = [
-            {"$group": {"_id": "$Categoría Cocina"}},  # Agrupamos por categoría de cocina
-            {"$sort": {"_id": 1}}  # Ordenamos alfabéticamente
+            {"$match": {"Barrio": neighborhood_name}},  # Match restaurants in the specified neighborhood
+            {"$group": {"_id": "$Categoría Cocina", "count": {"$sum": 1}}},  # Group by cuisine type and count occurrences
+            {"$sort": {"count": -1}},  # Sort by count in descending order (most common first)
+            {"$limit": 5}  # Limit to top 5 most common types
         ]
-        results = list(self.restaurants_collection.aggregate(pipeline))
-        # Extraer solo el valor de "_id", que es la categoría de cocina
-        cuisine_categories = [result["_id"] for result in results]
-        return cuisine_categories
+        result = list(self.restaurants_collection.aggregate(pipeline))  # Execute the pipeline
+        top_cuisine_types = [{"Tipo": entry["_id"], "count": entry["count"]} for entry in result]  # Format result
+        return top_cuisine_types
+
+
+
+
+
+    def get_popular_cuisine_by_neighborhood(self, neighborhood_name):
+        pipeline = [
+            {"$match": {"Barrio": neighborhood_name}},  # Match neighborhood
+            {"$group": {"_id": "$Categoría Cocina", "count": {"$sum": 1}}},  # Group by cuisine category
+            {"$sort": {"count": -1}},  # Sort by most popular
+            {"$limit": 1}  # Limit to the most popular cuisine
+        ]
+        result = list(self.restaurants_collection.aggregate(pipeline))
+        if result:
+            return result[0]["_id"]
+        return None
+
+
+    def get_price_categories_by_neighborhood(self, neighborhood_name):
+        pipeline = [
+            {"$match": {"Barrio": neighborhood_name}},  # Match restaurants in the neighborhood
+            {"$group": {"_id": "$Categoría Precio", "count": {"$sum": 1}}},  # Group by price category
+            {"$sort": {"count": -1}}  # Sort by most frequent categories
+        ]
+        result = list(self.restaurants_collection.aggregate(pipeline))
+        price_categories = {entry["_id"]: entry["count"] for entry in result}  # Convert to dictionary
+        return price_categories
+
+

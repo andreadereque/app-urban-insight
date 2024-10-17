@@ -159,6 +159,63 @@ def get_cuisine_categories():
     except Exception as e:
         logging.error(f"Error fetching cuisine categories: {str(e)}")
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/demographics_by_name', methods=['GET'])
+def get_demographics_by_name():
+    try:
+        barrio = request.args.get('barrio')
+        if barrio:
+            neighborhood_data = demographics_service.get_neighborhood_by_name(barrio)
+            if neighborhood_data:
+                return jsonify(neighborhood_data), 200
+            else:
+                return jsonify({"error": f"No data found for neighborhood: {barrio}"}), 404
+        else:
+            filters = request.args
+            return demographics_service.get_demographics(filters)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+@app.route('/api/similar_neighborhoods_by_renta/<string:renta>', methods=['GET'])
+def get_similar_neighborhoods_by_renta(renta):
+    renta = renta.replace(",", ".")  # Replace comma with period
+    renta = float(renta)  # Convert to float
+    print("************", renta)
+    
+    barrios_similares = demographics_service.get_neighborhoods_by_renta_service(renta)
+    
+    if barrios_similares:
+        return jsonify(barrios_similares)
+    else:
+        return jsonify({"error": "No se encontraron barrios con una renta similar"}), 404
+    
+@app.route('/api/top_5_cuisine_types_by_neighborhood/<string:neighborhood_name>', methods=['GET'])
+def get_top_5_cuisine_types_by_neighborhood(neighborhood_name):
+    try:
+        top_cuisine_types = restaurant_service.get_top_5_cuisine_types_by_neighborhood(neighborhood_name)
+        return jsonify(top_cuisine_types), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+    
+@app.route('/api/restaurant_price_categories_by_neighborhood/<string:neighborhood_name>', methods=['GET'])
+def get_restaurant_price_categories_by_neighborhood(neighborhood_name):
+    try:
+        price_categories = restaurant_service.get_price_categories_by_neighborhood(neighborhood_name)
+        return jsonify(price_categories), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/restaurant_count_by_neighborhood/<string:neighborhood_name>', methods=['GET'])
+def get_restaurant_count_by_neighborhood(neighborhood_name):
+    try:
+        count = restaurant_service.get_restaurant_count_by_neighborhood(neighborhood_name)
+        return jsonify({"count": count}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':

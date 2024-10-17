@@ -46,6 +46,10 @@ const EmptyLocalsMap = () => {
   const [competitorsData, setCompetitorsData] = useState(null);
   const [localAccessibility, setLocalAccessibility] = useState(null);
   const [clickedLocalTitle, setClickedLocalTitle] = useState(null); // Nuevo estado para el título
+  const [clickedLocal, setClickedLocal] = useState(null); // Nuevo estado para el título
+  const [neighborhood, setNeighborhood] = useState([]);
+
+
 
 
 
@@ -119,15 +123,31 @@ const EmptyLocalsMap = () => {
       console.error('Error al obtener competidores cercanos:', error);
     }
   };
-
+  const setTheNeighborhood = async (barrio) => {
+    try {
+      // Call the demographics endpoint with the specific neighborhood name
+      const response = await axios.get(`http://127.0.0.1:5000/api/demographics_by_name?barrio=${encodeURIComponent(barrio)}`);
+      
+      if (response.data) {
+        setNeighborhood(response.data); // Set the retrieved neighborhood data in the state
+        console.log("test", response.data)
+      } else {
+        console.error(`No data found for neighborhood: ${barrio}`);
+      }
+    } catch (error) {
+      console.error('Error fetching neighborhood data:', error);
+    }
+  };
 
   const handleMarkerClick = (local) => {
+    console.log('LOC', local)
     const coordinates = local["Coordinates"] || []; // Asegúrate de usar "Coordinates" en lugar de Geometry.coordinates
     fetchNeighbourCompetitors(coordinates);
     const accesibilidad1 = local['Accesibilidad']// Llamas a la función con las coordenadas
     setLocalAccessibility(accesibilidad1); // Guardas la accesibilidad del local seleccionado
     setClickedLocalTitle(local['Título']); // Almacenar el título del local clicado
-
+    setClickedLocal(local)
+    setTheNeighborhood(local['Barrio'])
 
   };
   useEffect(() => {
@@ -188,7 +208,7 @@ const EmptyLocalsMap = () => {
         <NeighborhoodStatsContainer />
       </div>
       <br /> 
-      <ClickedLocalDetails title={clickedLocalTitle} infoNearRestaurants={nearbyRestaurants} />
+      <ClickedLocalDetails title={clickedLocalTitle} infoNearRestaurants={nearbyRestaurants} local={clickedLocal} neighborhood={neighborhood} />
 
     </>
   );

@@ -8,6 +8,7 @@ from collections import Counter
 class EmptyLocalsService:
     def __init__(self, mongo):
         self.empty_locals_collection = mongo.db['empty_locals']
+        self.demographics_collection = mongo.db['demographic_info']
 
     def get_empty_locals(self):
         empty_locals = self.empty_locals_collection.find({}, {
@@ -105,3 +106,5 @@ class EmptyLocalsService:
         ]
         results = self.empty_locals_collection.aggregate(pipeline)
         return [{"Barrio": r["_id"], "average_price": r["average_price"]} for r in results]
+    
+    

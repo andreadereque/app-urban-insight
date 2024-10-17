@@ -5,9 +5,12 @@ from numpy import histogram
 import math
 from collections import Counter
 from pyproj import Proj, Transformer, transform
+import unidecode
 
 
 transformer = Transformer.from_crs("EPSG:32631", "EPSG:4326", always_xy=True)
+def normalize_name(name):
+    return unidecode.unidecode(name.lower()).strip()
 
 def convert_utm_to_wgs84(coordinates):
     try:
@@ -110,3 +113,51 @@ class DemographicService:
         except Exception as e:
             logging.error(f"Error fetching neighborhoods: {str(e)}")
             return jsonify({'error': str(e)}), 500
+        
+    def get_neighborhood_by_name(self, barrio):
+        try:
+            # Normalize the neighborhood name
+            normalized_barrio = normalize_name(barrio)
+            
+            # Query to match the normalized neighborhood name
+            neighborhood = self.demographics_collection.find_one(
+                {
+                    "$expr": {
+                        "$eq": [
+                            { "$trim": { "input": { "$toLower": "$Nombre" }}},  # Trim and lowercase the field in MongoDB
+                            normalized_barrio  # Compare to normalized neighborhood name
+                        ]
+                    }
+                },
+                {"_id": 0}  # Exclude _id from the results
+            )
+            
+            # If neighborhood is found, convert the coordinates and return the data
+            if neighborhood:
+                neighborhood['Geometry']['coordinates'] = convert_utm_to_wgs84(neighborhood['Geometry']['coordinates'])
+                return neighborhood
+            else:
+                return None
+        
+        except Exception as e:
+            logging.error(f"Error fetching neighborhood: {str(e)}")
+            raise e
+        
+    def get_neighborhoods_by_renta_service(self, renta):
+        barrios_similares = self.demographics_collection.find({
+            "$expr": {
+                "$and": [
+                    {"$gte": [{"$toDouble": {"$replaceAll": {"input": "$Renta", "find": ",", "replacement": "."}}}, renta * 0.95]},
+                    {"$lte": [{"$toDouble": {"$replaceAll": {"input": "$Renta", "find": ",", "replacement": "."}}}, renta * 1.05]}
+                ]
+            }
+        }, {"Nombre": 1, "Renta": 1})
+
+        # Convert the cursor into a list and convert ObjectId to string
+        barrios_similares_list = []
+        for barrio in barrios_similares:
+            barrio["_id"] = str(barrio["_id"])  # Convert ObjectId to string
+            barrios_similares_list.append(barrio)
+
+        return barrios_similares_list
+
