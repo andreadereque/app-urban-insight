@@ -107,4 +107,19 @@ class EmptyLocalsService:
         results = self.empty_locals_collection.aggregate(pipeline)
         return [{"Barrio": r["_id"], "average_price": r["average_price"]} for r in results]
     
+
+
+    def get_empty_locals_by_neighborhood(self, neighborhood_name):
+        try:
+            locals = self.empty_locals_collection.find({"Barrio": neighborhood_name})
+            local_list = []
+            for local in locals:
+                # Convert ObjectId to string for JSON serialization
+                local['_id'] = str(local['_id'])
+                local_list.append(local)
+            return local_list
+        except Exception as e:
+            logging.error(f"Error fetching locals: {str(e)}")
+            raise
+    
     

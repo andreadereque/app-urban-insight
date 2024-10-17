@@ -135,10 +135,15 @@ const ComparationBetweenNeigh = ({ renta }) => {
             />
         );
     };
+    const openMapInNewTab = (neighborhoodName) => {
+        const mapUrl = `http://localhost:3000/map/${neighborhoodName}`;
+        window.open(mapUrl, '_blank'); // Open the map in a new tab
+    };
+
 
     return (
         <div className="container">
-      
+
             <button onClick={handleToggle}>
                 {showNeighborhoods ? 'Ocultar Barrios Similares' : 'Mostrar Barrios Similares'}
             </button>
@@ -147,35 +152,49 @@ const ComparationBetweenNeigh = ({ renta }) => {
                 <div>
                     <h3>Barrios Similares por Renta</h3>
                     <div className="comparison-container">
-    {similarNeighborhoods.map((barrio, index) => (
-        <div key={index} className="comparison-column">
-            <div className="comparison-item">
-                <span className="comparison-label">Barrio:</span>
-                <span className="comparison-content">{barrio.Nombre}</span>
-            </div>
-            <div className="comparison-item">
-                <span className="comparison-label">Renta:</span>
-                <span className="comparison-content">{barrio.Renta}€</span>
-            </div>
-            <div className="comparison-item">
-                <span className="comparison-label">Nº Restaurantes:</span>
-                <span className="comparison-content">{barrio.restaurantCount}</span>
-            </div>
-            <div className="comparison-item chart">
-                <span className="comparison-label">Top 3 Tipos de Cocina:</span>
-                <div className="comparison-content">
-                    {generateBarChart(barrio)}
-                </div>
-            </div>
-            <div className="comparison-item chart">
-                <span className="comparison-label">Distribución de Precios:</span>
-                <div className="comparison-content">
-                    {generatePieChart(barrio.priceCategories)}
-                </div>
-            </div>
-        </div>
-    ))}
-</div>
+                        {similarNeighborhoods.map((barrio, index) => (
+                            <div key={index} className="comparison-column">
+                                <div className="comparison-item">
+                                    <span className="comparison-label">Barrio:</span>
+                                    <span className="comparison-content">{barrio.Nombre}</span>
+                                    <button
+                                        onClick={() => {
+                                            if (barrio.Nombre) {
+                                                // Save the neighborhood in localStorage
+                                                localStorage.setItem('lastNeighborhood', barrio.Nombre);
+                                                window.open(`/map/${barrio.Nombre}`, '_blank');
+                                            } else {
+                                                console.error("Neighborhood name is undefined");
+                                            }
+                                        }}
+                                        style={{ marginLeft: '10px', padding: '5px 10px', borderRadius: '5px', backgroundColor: '#4CAF50', color: 'white', cursor: 'pointer' }}>
+                                        Ver Mapa
+                                    </button>
+
+                                </div>
+                                <div className="comparison-item">
+                                    <span className="comparison-label">Renta:</span>
+                                    <span className="comparison-content">{barrio.Renta}€</span>
+                                </div>
+                                <div className="comparison-item">
+                                    <span className="comparison-label">Nº Restaurantes:</span>
+                                    <span className="comparison-content">{barrio.restaurantCount}</span>
+                                </div>
+                                <div className="comparison-item chart">
+                                    <span className="comparison-label">Top 3 Tipos de Cocina:</span>
+                                    <div className="comparison-content">
+                                        {generateBarChart(barrio)}
+                                    </div>
+                                </div>
+                                <div className="comparison-item chart">
+                                    <span className="comparison-label">Distribución de Precios:</span>
+                                    <div className="comparison-content">
+                                        {generatePieChart(barrio.priceCategories)}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
 
                 </div>
             )}

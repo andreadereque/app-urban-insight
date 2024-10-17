@@ -223,7 +223,19 @@ class RestaurantService:
         result = list(self.restaurants_collection.aggregate(pipeline))  # Execute the pipeline
         top_cuisine_types = [{"Tipo": entry["_id"], "count": entry["count"]} for entry in result]  # Format result
         return top_cuisine_types
-
+    
+    def get_restaurants_by_neighborhood(self, neighborhood_name):
+        try:
+            restaurants = self.restaurants_collection.find({"Barrio": neighborhood_name})
+            restaurant_list = []
+            for restaurant in restaurants:
+                # Convert ObjectId to string for JSON serialization
+                restaurant['_id'] = str(restaurant['_id'])
+                restaurant_list.append(restaurant)
+            return restaurant_list
+        except Exception as e:
+            logging.error(f"Error fetching restaurants: {str(e)}")
+            raise
 
 
 

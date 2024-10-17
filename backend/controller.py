@@ -216,6 +216,26 @@ def get_restaurant_count_by_neighborhood(neighborhood_name):
         return jsonify({"count": count}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/restaurants_by_neighborhood/<string:neighborhood>', methods=['GET'])
+def get_restaurants_by_neighborhood(neighborhood):
+    try:
+        # Call your RestaurantService to get restaurants by neighborhood
+        restaurants = restaurant_service.get_restaurants_by_neighborhood(neighborhood)
+        return jsonify(restaurants), 200
+    except Exception as e:
+        logging.error(f"Error fetching restaurants for neighborhood {neighborhood}: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+@app.route('/api/empty_locals_by_neighborhood/<string:neighborhood>', methods=['GET'])
+def get_empty_locals_by_neighborhood(neighborhood):
+    try:
+        # Call your EmptyLocalsService to get locals by neighborhood
+        locals = empty_local_service.get_empty_locals_by_neighborhood(neighborhood)
+        return jsonify(locals), 200
+    except Exception as e:
+        logging.error(f"Error fetching locals for neighborhood {neighborhood}: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == '__main__':

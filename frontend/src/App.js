@@ -5,6 +5,8 @@ import RestaurantList from './components/restaurants/RestaurantList';  // Restau
 import NavigationBar from './components/Navbar';  // Navbar
 import InteractiveMaps from './components/demographic_map/InteractiveMaps';
 import EmptyLocalsMap from './components/random/EmptyLocalMap';
+import NeighborhoodMap from './components/random/NeighborhoodMap';
+
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
             <Route path="/" element={<RestaurantList />} />  {/* Default route */}
             <Route path="/idealista" element={<EmptyLocalsMap />} />  {/* Dashboard route */}
             <Route path="/interactive-maps" element={<InteractiveMaps />} />  {/* Dashboard route */}
+            <Route path="/map/:neighborhood" element={<NeighborhoodMap />} />
+
 
           </Routes>
         </div>
