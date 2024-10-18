@@ -93,6 +93,9 @@ const ComparationBetweenNeigh = ({ renta }) => {
                 options={{
                     responsive: true,
                     plugins: {
+                        datalabels: {
+                            display: false,  // Esto asegura que los números NO se muestren
+                          },
                         legend: {
                             position: 'bottom',
                         },
@@ -122,6 +125,9 @@ const ComparationBetweenNeigh = ({ renta }) => {
                 options={{
                     responsive: true,
                     plugins: {
+                        datalabels: {
+                            display: false,  // Esto asegura que los números NO se muestren
+                          },
                         legend: {
                             display: false,
                         },

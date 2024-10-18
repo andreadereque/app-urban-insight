@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Autocomplete, TextField, Chip } from '@mui/material';
 import RestaurantTable from './clickLocal/RestaurantTable';
 import RestaurantTypeChart from './clickLocal/RestaurantsTypeChart';
-import RentaStudy from './clickLocal/RentaStudy';
 import '../../styles/ClickedLocalDetails.css';
 import ComparationBetweenNeigh from './ComparationBetweenNeigh';
 

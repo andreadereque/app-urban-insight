@@ -32,7 +32,7 @@ const LocalCountBarChart = ({ localCounts }) => {
   const options = {
     plugins: {
         datalabels: {
-          display: true,
+          display: false,
           color: 'black', // Color del texto
           font: {
             weight: 'bold', // Negrita

@@ -14,6 +14,7 @@ code {
   margin: 0 auto;
   padding: 20px;
 }
+
 .custom-cluster-icon {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -23,46 +24,58 @@ code {
   box-shadow: 0 0 15px rgba(255, 105, 180, 0.6);  /* Brillo rosado */
 }
 
-
-.list-group-item:hover {
-  background-color: #f0f0f0;
-  cursor: pointer;
-}
-/* Estilo general para el contenedor de filtros */
+/* Contenedor de filtros */
 .filter-container {
   display: flex;
-  justify-content: flex-start;
-  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 15px;
   margin-bottom: 20px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo para los selectores */
+/* Estilo de los filtros individuales */
 .filter-select {
   border-radius: 25px;
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  background-color: #f9f9f9;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  background-color: #fefefe;
   color: #4a4a4a;
   font-size: 14px;
   transition: box-shadow 0.3s ease;
   outline: none;
-  width: 150px;  /* Ancho para que todos los selects tengan tamaño uniforme */
+  width: 180px;
 }
 
-/* Estilo cuando se hace focus en un filtro */
 .filter-select:focus {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
   border-color: #ff6f61;
 }
 
-/* Quitar estilo a las etiquetas en el contenedor */
-.filter-wrapper {
-  display: inline-block;
-  background-color: #fff;
+/* Botón para limpiar filtros */
+.btn-clear-filters {
+  padding: 10px 20px;
+  background-color: #ff6f61;
+  border: none;
   border-radius: 25px;
-  padding: 5px 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
-.text-file-custom{
+
+.btn-clear-filters:hover {
+  background-color: #ff856d;
+}
+
+.text-file-custom {
   width: 400px;
+}
+
+/* Pequeña animación al hacer hover sobre los selectores */
+.filter-select:hover {
+  background-color: #f9f9f9;
 }

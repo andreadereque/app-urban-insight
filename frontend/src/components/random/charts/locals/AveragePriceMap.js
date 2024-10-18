@@ -14,14 +14,6 @@ const AveragePriceMap = ({ localPrices, neighborhoods }) => {
   const maxZoom = 18;  // Nivel de zoom máximo (más cercano)
 
   const importantNeighborhoods = [
-    'el Raval', 'la Barceloneta', 'la Sagrada Família', 'la Dreta de l\'Eixample',
-    'l\'Antiga Esquerra de l\'Eixample', 'la Nova Esquerra de l\'Eixample', 'Sants', 'les Corts',
-    'Vallcarca i els Penitents', 'el Putxet i el Farró', 'el Baix Guinardó', 'el Carmel',
-    'la Font d’en Fargues', 'el Camp d’en Grassot i Gràcia Nova', 'el Congrés i els Indians',
-    'Navas', 'Vallvidrera, el Tibidabo i les Planes', 'Sant Martí de Provençals',
-    'la Marina del Prat Vermell', 'Diagonal Mar i el Front Marítim del Poblenou', 'el Poblenou',
-    'Provençals del Poblenou', 'la Verneda i la Pau', 'el Guinardó', 'Can Baró',
-    'Sarrià', 'Pedralbes', 'Sant Andreu', 'Hostafrancs', 'el Barri Gòtic', 'el Fort Pienc'
   ]; // Lista de barrios importantes que deben mostrarse siempre
 
   const getColorForLocalPrice = (average_price) => {

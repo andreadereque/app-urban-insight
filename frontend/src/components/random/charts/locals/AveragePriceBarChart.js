@@ -33,26 +33,25 @@ const AveragePriceBarChart = ({ localPrices }) => {
 
   const options = {
     plugins: {
-        datalabels: {
-          display: true,
-          color: 'black', // Color del texto
-          font: {
-            weight: 'bold', // Negrita
-            size: 8, // Tamaño más pequeño
-          },
-          anchor: 'center',  // Ubicación del texto dentro de la barra
-          align: 'center',   // Alinear el texto en el centro de la barra
+      datalabels: {
+        display: false,
+        color: 'black', // Color del texto
+        font: {
+          weight: 'bold', // Negrita
+          size: 8, // Tamaño más pequeño
         },
+        anchor: 'center',  // Ubicación del texto dentro de la barra
+        align: 'center',   // Alinear el texto en el centro de la barra
       },
+    },
+    
     scales: {
       x: {
         ticks: {
           autoSkip: false,
           maxRotation: 45,
           minRotation: 45,
-          font: {
-            size: 10,
-          },
+          
         },
       },
     },
