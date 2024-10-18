@@ -227,6 +227,7 @@ class RestaurantService:
     def get_restaurants_by_neighborhood(self, neighborhood_name):
         try:
             restaurants = self.restaurants_collection.find({"Barrio": neighborhood_name})
+            print("restaurants",restaurants)
             restaurant_list = []
             for restaurant in restaurants:
                 # Convert ObjectId to string for JSON serialization
