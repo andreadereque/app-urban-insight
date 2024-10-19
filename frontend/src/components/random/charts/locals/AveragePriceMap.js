@@ -69,68 +69,67 @@ const AveragePriceMap = ({ localPrices, neighborhoods }) => {
 
   useEffect(() => {
     if (mapRef?.current && neighborhoods.length > 0) {
-        neighborhoodLayersRef.current.forEach(layer => {
-            if (mapRef.current.hasLayer(layer)) {
-                mapRef.current.removeLayer(layer);
-            }
-        });
-        neighborhoodLayersRef.current = [];
-
-        neighborhoods.forEach((neighborhood) => {
-            if (neighborhood.Geometry && neighborhood.Geometry.coordinates.length > 0) {
-                const coordinates = neighborhood.Geometry.coordinates[0];
-                const latLngs = coordinates.map(coord => {
-                    const [easting, northing] = coord;
-                    const latLng = proj4(utmZone, "WGS84", [easting, northing]);
-                    return [latLng[1], latLng[0]];  // Leaflet usa formato [lat, lng]
-                });
-
-                const count = localPrices.find(item => item.Barrio.toLowerCase() === neighborhood.Nombre.toLowerCase())?.average_price || 0;
-                const color = getColorForLocalPrice(count);
-                const polygon = L.polygon(latLngs, {
-                    color: 'purple',
-                    fillColor: color,
-                    fillOpacity: 0.7,
-                    weight: 2
-                }).addTo(mapRef.current);
-
-                polygon.bindTooltip(`
-                  <div class="small-tooltip" style="text-align: center;">
-                    <b>${neighborhood.Nombre}</b><br/>
-                    Precio medio: ${count}€
-                  </div>`, 
-                {
-                  permanent: true,
-                  direction: "auto",
-                  className: "custom-tooltip",
-                  offset: L.point(0, 0),
-                  interactive: true
-                });
-
-                polygon.feature = { properties: { name: neighborhood.Nombre } };
-                neighborhoodLayersRef.current.push(polygon);
-            }
-        });
-
-        const bounds = neighborhoodLayersRef.current.map(layer => layer.getBounds());
-        if (bounds.length > 0) {
-            const combinedBounds = bounds.reduce((acc, val) => acc.extend(val), L.latLngBounds(bounds[0]));
-            mapRef.current.fitBounds(combinedBounds);
+      neighborhoodLayersRef.current.forEach(layer => {
+        if (mapRef.current.hasLayer(layer)) {
+          mapRef.current.removeLayer(layer);
         }
-
-        mapRef.current.on('zoomend', () => {
-            const mapZoom = mapRef.current.getZoom();
-            updateTooltipVisibility(mapZoom);
-        });
-
-        updateTooltipVisibility(mapRef.current.getZoom());
-
-        // Asegurarse de que la leyenda se añada al mapa después de cargarlo
-        if (!document.querySelector('.leaflet-control .legend')) {
-            addLegend(mapRef.current);
+      });
+      neighborhoodLayersRef.current = [];
+  
+      neighborhoods.forEach((neighborhood) => {
+        if (neighborhood.Geometry && neighborhood.Geometry.coordinates.length > 0) {
+          const coordinates = neighborhood.Geometry.coordinates[0];
+          const latLngs = coordinates.map(coord => {
+            const [easting, northing] = coord;
+            const latLng = proj4(utmZone, "WGS84", [easting, northing]);
+            return [latLng[1], latLng[0]];  // Leaflet usa formato [lat, lng]
+          });
+  
+          const count = Math.round(localPrices.find(item => item.Barrio.toLowerCase() === neighborhood.Nombre.toLowerCase())?.average_price || 0); // Precio sin decimales
+          const color = getColorForLocalPrice(count);
+          const polygon = L.polygon(latLngs, {
+            color: 'purple',
+            fillColor: color,
+            fillOpacity: 0.7,
+            weight: 2
+          }).addTo(mapRef.current);
+  
+          // Añadir el popup al pasar el ratón (mouseover)
+          polygon.on('mouseover', function (e) {
+            const popup = L.popup()
+              .setLatLng(e.latlng)
+              .setContent(`
+                <div class="small-tooltip" style="text-align: center;">
+                  <b style="font-size: 20px;">${neighborhood.Nombre}</b><br/>
+                  <span style="font-size: 16px;">Precio medio: <b>${count}€</b></span>
+                </div>`)
+              .openOn(mapRef.current);
+          });
+  
+          // Cerrar el popup al salir del área del barrio (mouseout)
+          polygon.on('mouseout', function () {
+            mapRef.current.closePopup();
+          });
+  
+          polygon.feature = { properties: { name: neighborhood.Nombre } };
+          neighborhoodLayersRef.current.push(polygon);
         }
+      });
+  
+      const bounds = neighborhoodLayersRef.current.map(layer => layer.getBounds());
+      if (bounds.length > 0) {
+        const combinedBounds = bounds.reduce((acc, val) => acc.extend(val), L.latLngBounds(bounds[0]));
+        mapRef.current.fitBounds(combinedBounds);
+      }
+  
+      // Asegurarse de que la leyenda se añada al mapa después de cargarlo
+      if (!document.querySelector('.leaflet-control .legend')) {
+        addLegend(mapRef.current);
+      }
     }
-}, [neighborhoods, localPrices]);
+  }, [neighborhoods, localPrices]);
+  
+  
 
   return (
     <>

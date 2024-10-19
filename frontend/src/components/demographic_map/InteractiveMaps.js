@@ -6,18 +6,21 @@ import proj4 from 'proj4';  // Coordinate conversion
 import InformationPanel from './InformationPanel';  // Import the InformationPanel
 import ComparePanel from './ComparePanels';  // Import the ComparePanel
 import ComparationBetweenNeigh from '../random/ComparationBetweenNeigh';
+import '../../styles/Tooltip.css'; // Import custom tooltip styles
 
 const InteractiveMaps = ({ filters }) => {
   const mapRef = useRef(null);  // Reference for the map
+  const neighborhoodLayersRef = useRef([]);
   const [barcelonaData, setBarcelonaData] = useState(null);  // Aggregated data for Barcelona
   const [selectedNeighborhood, setSelectedNeighborhood] = useState(null);  // Selected neighborhood data
   const [neighborhoods, setNeighborhoods] = useState([]);  // Store neighborhoods data
   const [showComparePanel, setShowComparePanel] = useState(false);  // State to toggle compare panel
   const [showCompareSimilarPanel, setShowCompareSimilarPanel] = useState(false);  // State to toggle compare panel
+  const [hoveredNeighborhood, setHoveredNeighborhood] = useState(null);  // State for hovered neighborhood
+
+  const utmZone = "+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs";  // UTM zone for Barcelona
 
   useEffect(() => {
-    const utmZone = "+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs";  // UTM zone for Barcelona
-
     // Fetch filtered data from the backend
     axios.get("http://127.0.0.1:5000/api/demographics", { params: filters })
       .then(response => {
@@ -33,11 +36,12 @@ const InteractiveMaps = ({ filters }) => {
             mapRef.current = L.map('map', {
               center: [41.3851, 2.1734],  // Center on Barcelona
               zoom: 12,
-              dragging: false,  // Disable dragging
+              dragging: true,  // Enable dragging
               maxBounds: barcelonaBounds,
               zoomControl: true,
               minZoom: 12,
               maxZoom: 19,
+              scrollWheelZoom: true  // Enable zoom with mouse wheel
             });
 
             // Add tile layer
@@ -49,20 +53,54 @@ const InteractiveMaps = ({ filters }) => {
 
           // Add polygons for neighborhoods
           neighborhoods.forEach((neighborhood) => {
-            const coordinates = neighborhood.Geometry.coordinates[0];
+            if (neighborhood.Geometry && neighborhood.Geometry.coordinates.length > 0) {
+              const coordinates = neighborhood.Geometry.coordinates[0];
 
-            const latLngs = coordinates.map(coord => {
-              const [easting, northing] = coord;
-              const latLng = proj4(utmZone, "WGS84", [easting, northing]);
-              return [latLng[1], latLng[0]];
-            });
+              const latLngs = coordinates.map(coord => {
+                const [easting, northing] = coord;
+                const latLng = proj4(utmZone, "WGS84", [easting, northing]);
+                return [latLng[1], latLng[0]];
+              });
 
-            L.polygon(latLngs, { color: 'magenta', fillOpacity: 0.2 })
-              .addTo(mapRef.current)
-              .on('click', () => {
+              const count = neighborhood.Precio || 0; // Precio medio, reemplaza si tienes esta información
+              const polygon = L.polygon(latLngs, {
+                color: 'purple',
+                fillOpacity: 0.3,
+                weight: 2
+              }).addTo(mapRef.current);
+
+              polygon.bindPopup(`
+                 <div style="text-align: center; font-size: 14px; font-family: 'Helvetica Neue', sans-serif; color: #4b2c45; font-weight: bold;">
+                  <b>${neighborhood.Nombre}</b><br/>
+                </div>`, {
+                className: 'custom-popup',
+                closeButton: false,
+                autoPan: true
+              });
+
+
+              polygon.on('mouseover', () => {
+                polygon.openPopup();
+                setHoveredNeighborhood(neighborhood);
+              });
+              polygon.on('mouseout', () => {
+                polygon.closePopup();
+                setHoveredNeighborhood(null);
+              });
+
+              polygon.on('click', () => {
                 setSelectedNeighborhood(neighborhood);  // Set the selected neighborhood
               });
+
+              neighborhoodLayersRef.current.push(polygon);
+            }
           });
+
+          const bounds = neighborhoodLayersRef.current.map(layer => layer.getBounds());
+          if (bounds.length > 0) {
+            const combinedBounds = bounds.reduce((acc, val) => acc.extend(val), L.latLngBounds(bounds[0]));
+            mapRef.current.fitBounds(combinedBounds);
+          }
         }
       })
       .catch(error => console.error("Error fetching data: ", error));
@@ -116,12 +154,8 @@ const InteractiveMaps = ({ filters }) => {
     setShowCompareSimilarPanel(!showCompareSimilarPanel);
   };
 
-
   return (
     <div style={{ flexDirection: 'column', height: "170vh", backgroundColor: "#f7e6e6" }}>
-      {/* Button to toggle the compare panel */}
-
-
       {/* Map and Information Panel Section */}
       <div style={{ display: 'flex', height: "65%", backgroundColor: "#f7e6e6" }}>
         {/* Map Section */}
@@ -131,6 +165,9 @@ const InteractiveMaps = ({ filters }) => {
 
         {/* Information Panel Section */}
         <div style={{ width: "40%", padding: "10px", overflowY: "scroll", backgroundColor: "#fff7f8" }}>
+        <p id="json-neighborhood">
+        {selectedNeighborhood ? JSON.stringify(selectedNeighborhood, null, 2) : 'No hay barrio seleccionado'}
+      </p>
           <InformationPanel selectedNeighborhood={selectedNeighborhood} barcelonaData={barcelonaData} />
         </div>
       </div>
@@ -152,47 +189,41 @@ const InteractiveMaps = ({ filters }) => {
           {showCompareSimilarPanel ? 'Ocultar panel barrios similares' : 'Comparar barrios similares'}
         </button>
       </div>
-     {/* Compare Panel Section */}
-{showCompareSimilarPanel && (
-  <div style={{ height: "25%", backgroundColor: "#fff7f8", padding: "10px" }}>
-    {selectedNeighborhood && selectedNeighborhood['Renta'] ? (
-      <div><h1>Barrio seleccionado: {selectedNeighborhood['Nombre']}</h1>
-      <h2>Pertence al distrito: {selectedNeighborhood['Distrito']}</h2>
-      <p>La renta del barrio seleccionado es: <b>{selectedNeighborhood['Renta']}€</b></p>
-      <ComparationBetweenNeigh renta={selectedNeighborhood['Renta']} />
-      </div>
-      
-    ) : (
-      <div 
-        style={{
-          display: 'center',
-          width: '40%',
-          
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#ffe6e9',
-          color: '#d9534f',
-          padding: '15px',
-          borderRadius: '8px',
-          border: '1px solid #f5c6cb',
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '16px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          textAlign: 'center'
-        }}
-      >
-        <i style={{ marginRight: '8px', fontSize: '20px' }} className="fas fa-exclamation-circle"></i>
-        Primero debe seleccionar un barrio
-      </div>
-    )}
-  </div>
-)}
-
-
-
+      {/* Compare Panel Section */}
+      {showCompareSimilarPanel && (
+        <div style={{ height: "25%", backgroundColor: "#fff7f8", padding: "10px" }}>
+          {selectedNeighborhood && selectedNeighborhood['Renta'] ? (
+            <div>
+              <h1>Barrio seleccionado: {selectedNeighborhood['Nombre']}</h1>
+              <h2>Pertence al distrito: {selectedNeighborhood['Distrito']}</h2>
+              <p>La renta del barrio seleccionado es: <b>{selectedNeighborhood['Renta']}€</b></p>
+              <ComparationBetweenNeigh renta={selectedNeighborhood['Renta']} />
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'center',
+                width: '40%',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#ffe6e9',
+                color: '#d9534f',
+                padding: '15px',
+                borderRadius: '8px',
+                border: '1px solid #f5c6cb',
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '16px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                textAlign: 'center'
+              }}
+            >
+              <i style={{ marginRight: '8px', fontSize: '20px' }} className="fas fa-exclamation-circle"></i>
+              Primero debe seleccionar un barrio
+            </div>
+          )}
+        </div>
+      )}
     </div>
-
-
   );
 };
 

@@ -95,11 +95,25 @@ const RestaurantMap = ({ filteredRestaurants }) => {
             fillOpacity: heatmapActive ? 0.7 : 0.5  // Ajusta la opacidad basado en si el heatmap está activo
           }).addTo(mapRef.current);
 
+          // Añadir evento mouseover para mostrar el nombre del barrio
+          polygon.on('mouseover', function (e) {
+            const popup = L.popup()
+              .setLatLng(e.latlng)
+              .setContent(`<div style="font-size: 16px; font-weight: bold;">${neighborhood.Nombre}</div>`)
+              .openOn(mapRef.current);
+          });
+
+          // Añadir evento mouseout para cerrar el popup
+          polygon.on('mouseout', function () {
+            mapRef.current.closePopup();
+          });
+
           neighborhoodLayersRef.current.push(polygon);
         });
       }
     }
   }, [showNeighborhoods, neighborhoods, heatmapActive, restaurantCounts]);
+
 
   // Cargar y mostrar transportes
   useEffect(() => {

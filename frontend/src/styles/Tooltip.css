@@ -38,3 +38,17 @@
     border-radius: 4px;
   }
     
+  .custom-popup {
+    padding: 10px;
+}
+
+.custom-popup .leaflet-popup-tip {
+    background-color: #ffe6f2; /* Ajustar el color de la flecha del popup */
+}
+
+.custom-tooltip {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 20px; /* Aumenta el tamaño de la fuente */
+    color: #4b2c45; /* Color del texto */
+    font-weight: bold; /* Grosor del texto */
+}
