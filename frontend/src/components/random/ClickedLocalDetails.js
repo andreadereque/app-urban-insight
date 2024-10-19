@@ -24,6 +24,7 @@ const ClickedLocalDetails = ({ title, infoNearRestaurants, local, neighborhood }
                 // Obtener opciones de tipo desde el backend
                 const typeResponse = await fetch('http://127.0.0.1:5000/api/restaurant_cuisine_categories');
                 const typeData = await typeResponse.json();
+                console.log("type",typeData)
                 setTypeOptions(typeData);
             } catch (error) {
                 console.error('Error fetching filter options:', error);

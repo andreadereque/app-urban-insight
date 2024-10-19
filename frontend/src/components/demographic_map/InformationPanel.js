@@ -7,6 +7,7 @@ Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
   const data = selectedNeighborhood || barcelonaData;
+  console.log("data", data)
 
   if (!data) return null;
 

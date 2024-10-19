@@ -227,7 +227,7 @@ def get_restaurants_by_neighborhood(neighborhood):
         logging.error(f"Error fetching restaurants for neighborhood {neighborhood}: {str(e)}")
         return jsonify({"error": str(e)}), 500
     
-    
+
 @app.route('/api/empty_locals_by_neighborhood/<string:neighborhood>', methods=['GET'])
 def get_empty_locals_by_neighborhood(neighborhood):
     try:
