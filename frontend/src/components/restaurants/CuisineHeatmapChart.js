@@ -88,6 +88,9 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
                             },
                         },
                         plugins: {
+                            datalabels: {
+                                display: false,  // Esto asegura que los números NO se muestren
+                              },
                             legend: { display: false },
                             title: {
                                 display: true,
@@ -98,7 +101,7 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
                                 },
                             },
                             datalabels: {
-                                display: true,
+                                display: false,
                                 color: '#fff',
                                 font: {
                                     weight: 'bold',

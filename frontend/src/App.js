@@ -13,7 +13,7 @@ function App() {
     <Router>
       <div>
         <NavigationBar />
-        <div className="container mt-4">
+        <div className="fullscreen-content">
           <Routes>
             <Route path="/" element={<RestaurantList />} />  {/* Default route */}
             <Route path="/idealista" element={<EmptyLocalsMap />} />  {/* Dashboard route */}

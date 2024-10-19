@@ -26,6 +26,9 @@ const PopularCategoriesChart = ({ categoryCountsByBarrio }) => {
       y: { title: { display: true, text: 'Número de Restaurantes' } }
     },
     plugins: {
+      datalabels: {
+        display: false,  // Esto asegura que los números NO se muestren
+      },
       tooltip: {
         callbacks: {
           label: function(context) {

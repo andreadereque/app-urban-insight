@@ -1,6 +1,5 @@
 import React from 'react';
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-
 import { Bar } from 'react-chartjs-2';
 
 // Registra las escalas y elementos necesarios para Chart.js
@@ -23,8 +22,7 @@ const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
   const distribucionInmigracion = data.distribucionInmigracion || data['Distribución immigración'];
   const distribucionHabitaciones = data.distribucionHabitaciones || data['Distribución habitación por casas'];
 
-
-  // Age Distribution Chart
+  // Datos para los gráficos
   const barDataEdad = {
     labels: Object.keys(distribucionEdad || {}),
     datasets: [
@@ -37,7 +35,6 @@ const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
     ],
   };
 
-  // Immigration Distribution Chart
   const barDataInmigracion = {
     labels: Object.keys(distribucionInmigracion || {}),
     datasets: [
@@ -50,7 +47,6 @@ const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
     ],
   };
 
-  // Rooms Distribution Chart
   const barDataHabitaciones = {
     labels: Object.keys(distribucionHabitaciones || {}),
     datasets: [
@@ -63,10 +59,29 @@ const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
     ],
   };
 
-  // Opciones de tamaño para los gráficos
+  // Opciones de tamaño flexible para los gráficos
   const chartOptions = {
-    maintainAspectRatio: false, // Permite controlar mejor el tamaño
+    maintainAspectRatio: true, // Mantener el aspecto, pero flexible
     responsive: true,
+    plugins: {
+      datalabels: {
+        display: false,  // Esto oculta los números dentro de las barras
+      },
+      legend: {
+        display: true,
+      },
+      tooltip: {
+        enabled: true,
+      },
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+      },
+      y: {
+        beginAtZero: true,
+      },
+    },
   };
 
   return (
@@ -79,30 +94,30 @@ const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
       <p><strong>Trabajadores de baja calificación:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Trabajadores de baja calificación'] : data.trabajadoresBajaCalificacion)}%</p>
       <p><strong>Población ocupada:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población ocupada'] : data.poblacionOcupada)}%</p>
 
-      {/* Age Distribution Chart */}
+      {/* Gráfico de Distribución por Edad */}
       <h3>Distribución por Edad</h3>
       {distribucionEdad ? (
-        <div style={{ height: '150px', width:'400px' }}>
+        <div style={{ height: 'auto', width: '100%' }}> {/* Ancho 100% para ajustar dinámicamente */}
           <Bar data={barDataEdad} options={chartOptions} />
         </div>
       ) : (
         <p>No data available</p>
       )}
 
-      {/* Immigration Distribution Chart */}
+      {/* Gráfico de Distribución por Inmigración */}
       <h3>Distribución por Inmigración</h3>
       {distribucionInmigracion ? (
-        <div style={{ height: '150px' , width:'400px'}}>
+        <div style={{ height: 'auto', width: '100%' }}> {/* Ancho 100% para ajustar dinámicamente */}
           <Bar data={barDataInmigracion} options={chartOptions} />
         </div>
       ) : (
         <p>No data available</p>
       )}
 
-      {/* Rooms Distribution Chart */}
+      {/* Gráfico de Distribución por Habitaciones */}
       <h3>Distribución por Habitaciones</h3>
       {distribucionHabitaciones ? (
-        <div style={{ height: '150px' , width:'400px'}}>
+        <div style={{ height: 'auto', width: '100%' }}> {/* Ancho 100% para ajustar dinámicamente */}
           <Bar data={barDataHabitaciones} options={chartOptions} />
         </div>
       ) : (

@@ -113,6 +113,9 @@ const Dashboard = ({ filteredRestaurants }) => {
                                     },
                                 },
                                 plugins: {
+                                    datalabels: {
+                                        display: false,  // Esto asegura que los números NO se muestren
+                                      },
                                     legend: { display: false },
                                     title: {
                                         display: true,
@@ -123,7 +126,7 @@ const Dashboard = ({ filteredRestaurants }) => {
                                         },
                                     },
                                     datalabels: {
-                                        display: true,
+                                        display: false,
                                         color: '#fff',
                                         font: {
                                             weight: 'bold',
@@ -298,6 +301,9 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
                             },
                         },
                         plugins: {
+                            datalabels: {
+                                display: false,  // Esto asegura que los números NO se muestren
+                              },
                             legend: { display: false },
                             title: {
                                 display: true,
@@ -307,17 +313,7 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
                                     weight: 'bold',
                                 },
                             },
-                            datalabels: {
-                                display: true,
-                                color: '#fff',
-                                font: {
-                                    weight: 'bold',
-                                    size: 14,
-                                },
-                                anchor: 'center',
-                                align: 'center',
-                                formatter: (value) => value,
-                            },
+                            
                         },
                     }}
                 />
