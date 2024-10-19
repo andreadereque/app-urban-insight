@@ -4,7 +4,6 @@ import { Bar } from 'react-chartjs-2';
 const PopularCategoriesChart = ({ categoryCountsByBarrio }) => {
   // Revisamos los datos para asegurarnos de que están correctos
   useEffect(() => {
-    console.log("Datos de categorías por barrio:", categoryCountsByBarrio);
   }, [categoryCountsByBarrio]);
 
   const barrios = Object.keys(categoryCountsByBarrio); // Nombres de los barrios
@@ -27,6 +26,9 @@ const PopularCategoriesChart = ({ categoryCountsByBarrio }) => {
       y: { title: { display: true, text: 'Número de Restaurantes' } }
     },
     plugins: {
+      datalabels: {
+        display: false,  // Esto asegura que los números NO se muestren
+      },
       tooltip: {
         callbacks: {
           label: function(context) {

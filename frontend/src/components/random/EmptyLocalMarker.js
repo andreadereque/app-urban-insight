@@ -3,7 +3,6 @@ import { Marker, Popup } from 'react-leaflet';
 
 const EmptyLocalMarker = ({ local, icon, onPopupOpen, onMarkerClick }) => {
   const coordinates = local.Coordinates || [];
-  console.log('ayudaaaaa', local);
 
   if (coordinates.length === 2) {
     const [lng, lat] = coordinates;

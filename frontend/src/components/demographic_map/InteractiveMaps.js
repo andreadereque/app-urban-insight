@@ -5,6 +5,7 @@ import axios from 'axios';
 import proj4 from 'proj4';  // Coordinate conversion
 import InformationPanel from './InformationPanel';  // Import the InformationPanel
 import ComparePanel from './ComparePanels';  // Import the ComparePanel
+import ComparationBetweenNeigh from '../random/ComparationBetweenNeigh';
 
 const InteractiveMaps = ({ filters }) => {
   const mapRef = useRef(null);  // Reference for the map
@@ -12,6 +13,7 @@ const InteractiveMaps = ({ filters }) => {
   const [selectedNeighborhood, setSelectedNeighborhood] = useState(null);  // Selected neighborhood data
   const [neighborhoods, setNeighborhoods] = useState([]);  // Store neighborhoods data
   const [showComparePanel, setShowComparePanel] = useState(false);  // State to toggle compare panel
+  const [showCompareSimilarPanel, setShowCompareSimilarPanel] = useState(false);  // State to toggle compare panel
 
   useEffect(() => {
     const utmZone = "+proj=utm +zone=31 +datum=WGS84 +units=m +no_defs";  // UTM zone for Barcelona
@@ -110,38 +112,87 @@ const InteractiveMaps = ({ filters }) => {
   const toggleComparePanel = () => {
     setShowComparePanel(!showComparePanel);
   };
+  const toggleCompareSimilarPanel = () => {
+    setShowCompareSimilarPanel(!showCompareSimilarPanel);
+  };
+
 
   return (
     <div style={{ flexDirection: 'column', height: "170vh", backgroundColor: "#f7e6e6" }}>
-  {/* Button to toggle the compare panel */}
-  <div style={{ padding: "10px", backgroundColor: "#fff7f8", textAlign: "center" }}>
-    <button onClick={toggleComparePanel} style={{ marginBottom: '10px' }}>
-      {showComparePanel ? 'Hide Compare Panel' : 'Compare Two Neighborhoods'}
-    </button>
+      {/* Button to toggle the compare panel */}
+
+
+      {/* Map and Information Panel Section */}
+      <div style={{ display: 'flex', height: "65%", backgroundColor: "#f7e6e6" }}>
+        {/* Map Section */}
+        <div id="map" style={{ height: "100%", width: "80%" }}>
+          {/* Map container */}
+        </div>
+
+        {/* Information Panel Section */}
+        <div style={{ width: "40%", padding: "10px", overflowY: "scroll", backgroundColor: "#fff7f8" }}>
+          <InformationPanel selectedNeighborhood={selectedNeighborhood} barcelonaData={barcelonaData} />
+        </div>
+      </div>
+      <div>
+        <div style={{ padding: "10px", backgroundColor: "#fff7f8", textAlign: "center" }}>
+          <button onClick={toggleComparePanel} style={{ marginBottom: '10px' }}>
+            {showComparePanel ? 'Ocultar panel comparación' : 'Comparar 2 barrios'}
+          </button>
+        </div>
+        {/* Compare Panel Section */}
+        {showComparePanel && (
+          <div style={{ height: "25%", backgroundColor: "#fff7f8", padding: "10px" }}>
+            <ComparePanel neighborhoodsData={neighborhoods} />
+          </div>
+        )}
+      </div>
+      <div style={{ padding: "10px", backgroundColor: "#fff7f8", textAlign: "center" }}>
+        <button onClick={toggleCompareSimilarPanel} style={{ marginBottom: '10px' }}>
+          {showCompareSimilarPanel ? 'Ocultar panel barrios similares' : 'Comparar barrios similares'}
+        </button>
+      </div>
+     {/* Compare Panel Section */}
+{showCompareSimilarPanel && (
+  <div style={{ height: "25%", backgroundColor: "#fff7f8", padding: "10px" }}>
+    {selectedNeighborhood && selectedNeighborhood['Renta'] ? (
+      <div><h1>Barrio seleccionado: {selectedNeighborhood['Nombre']}</h1>
+      <h2>Pertence al distrito: {selectedNeighborhood['Distrito']}</h2>
+      <p>La renta del barrio seleccionado es: <b>{selectedNeighborhood['Renta']}€</b></p>
+      <ComparationBetweenNeigh renta={selectedNeighborhood['Renta']} />
+      </div>
+      
+    ) : (
+      <div 
+        style={{
+          display: 'center',
+          width: '40%',
+          
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#ffe6e9',
+          color: '#d9534f',
+          padding: '15px',
+          borderRadius: '8px',
+          border: '1px solid #f5c6cb',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '16px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          textAlign: 'center'
+        }}
+      >
+        <i style={{ marginRight: '8px', fontSize: '20px' }} className="fas fa-exclamation-circle"></i>
+        Primero debe seleccionar un barrio
+      </div>
+    )}
   </div>
+)}
 
-  {/* Map and Information Panel Section */}
-  <div style={{ display: 'flex', height: "65%", backgroundColor: "#f7e6e6" }}>
-    {/* Map Section */}
-    <div id="map" style={{ height: "100%", width: "80%" }}>
-      {/* Map container */}
+
+
     </div>
 
-    {/* Information Panel Section */}
-    <div style={{ width: "40%", padding: "10px", overflowY: "scroll", backgroundColor: "#fff7f8" }}>
-      <InformationPanel selectedNeighborhood={selectedNeighborhood} barcelonaData={barcelonaData} />
-    </div>
-  </div>
 
-  {/* Compare Panel Section */}
-  {showComparePanel && (
-    <div style={{ height: "25%", backgroundColor: "#fff7f8", padding: "10px" }}>
-      <ComparePanel neighborhoodsData={neighborhoods} />
-    </div>
-  )}
-</div>
-
-  
   );
 };
 

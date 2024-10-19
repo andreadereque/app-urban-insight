@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels'; 
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import TreeMapComponent from './TreeMapComponent';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, ChartDataLabels);
@@ -113,6 +113,9 @@ const Dashboard = ({ filteredRestaurants }) => {
                                     },
                                 },
                                 plugins: {
+                                    datalabels: {
+                                        display: false,  // Esto asegura que los números NO se muestren
+                                      },
                                     legend: { display: false },
                                     title: {
                                         display: true,
@@ -123,7 +126,7 @@ const Dashboard = ({ filteredRestaurants }) => {
                                         },
                                     },
                                     datalabels: {
-                                        display: true,
+                                        display: false,
                                         color: '#fff',
                                         font: {
                                             weight: 'bold',
@@ -143,28 +146,51 @@ const Dashboard = ({ filteredRestaurants }) => {
                 )}
             </div>
 
-            {/* TreeMap */}
-            <div style={styles.treeMapContainer}>
-                {treeMapData && <TreeMapComponent data={treeMapData} />}
+
+
+            {/* Dropdown estilizado para seleccionar el Barrio */}
+            <div className="select-container" style={{ margin: '20px 0', textAlign: 'center' }}>
+                <label
+                    htmlFor="barrio-select"
+                    className="select-label"
+                    style={{
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        color: '#555',
+                        marginRight: '10px'
+                    }}
+                >
+                    Seleccionar Barrio:
+                </label>
+                <select
+                    id="barrio-select"
+                    className="select-dropdown"
+                    onChange={handleBarrioChange}
+                    value={selectedBarrio}
+                    style={{
+                        padding: '10px 15px',
+                        fontSize: '14px',
+                        borderRadius: '8px',
+                        border: '1px solid #ccc',
+                        backgroundColor: '#fff',
+                        color: '#333',
+                        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+                        outline: 'none',
+                        cursor: 'pointer',
+                        transition: 'border-color 0.3s ease',
+                    }}
+                    onMouseOver={(e) => e.target.style.borderColor = '#FF6F91'}
+                    onMouseOut={(e) => e.target.style.borderColor = '#ccc'}
+                >
+                    <option value="" disabled>Seleccione un barrio</option>
+                    {[...new Set(filteredRestaurants.map(restaurant => restaurant.Barrio))].map(barrio => (
+                        <option key={barrio} value={barrio}>
+                            {barrio}
+                        </option>
+                    ))}
+                </select>
             </div>
 
-            {/* Dropdown para seleccionar el Barrio */}
-            <div className="select-container">
-    <label htmlFor="barrio-select" className="select-label">Seleccionar Barrio: </label>
-    <select 
-        id="barrio-select" 
-        className="select-dropdown" 
-        onChange={handleBarrioChange} 
-        value={selectedBarrio}
-    >
-        <option value="">Seleccione un barrio</option>
-        {[...new Set(filteredRestaurants.map(restaurant => restaurant.Barrio))].map(barrio => (
-            <option key={barrio} value={barrio}>
-                {barrio}
-            </option>
-        ))}
-    </select>
-</div>
 
             {/* Heatmap de Tipos de Cocina */}
             {selectedBarrio && <CuisineHeatmapChart filteredRestaurants={filteredRestaurants} selectedBarrio={selectedBarrio} />}
@@ -275,6 +301,9 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
                             },
                         },
                         plugins: {
+                            datalabels: {
+                                display: false,  // Esto asegura que los números NO se muestren
+                              },
                             legend: { display: false },
                             title: {
                                 display: true,
@@ -284,17 +313,7 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
                                     weight: 'bold',
                                 },
                             },
-                            datalabels: {
-                                display: true,
-                                color: '#fff',
-                                font: {
-                                    weight: 'bold',
-                                    size: 14,
-                                },
-                                anchor: 'center',
-                                align: 'center',
-                                formatter: (value) => value,
-                            },
+                            
                         },
                     }}
                 />

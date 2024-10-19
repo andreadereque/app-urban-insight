@@ -1,10 +1,9 @@
 import React from 'react';
-import AccesibilityChart from './charts/AccesibilityChart.js';
-import CuisineChart from './charts/CuisineChart.js';
-import RatingChart from './charts/RatingChart.js';
-import PriceChart from './charts/PriceChart.js';
+import AccesibilityChart from './charts/demo/AccesibilityChart.js';
+import CuisineChart from './charts/demo/CuisineChart.js';
+import RatingChart from './charts/demo/RatingChart.js';
+import PriceChart from './charts/demo/PriceChart.js';
 const CompetitorChart = ({ data , accessibility}) => {
-    console.log("adofoiwejfowej",accessibility)
   return (
     <div>
       <h3>Análisis de competidores</h3>

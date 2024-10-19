@@ -5,17 +5,21 @@ import RestaurantList from './components/restaurants/RestaurantList';  // Restau
 import NavigationBar from './components/Navbar';  // Navbar
 import InteractiveMaps from './components/demographic_map/InteractiveMaps';
 import EmptyLocalsMap from './components/random/EmptyLocalMap';
+import NeighborhoodMap from './components/random/NeighborhoodMap';
+
 
 function App() {
   return (
     <Router>
       <div>
         <NavigationBar />
-        <div className="container mt-4">
+        <div className="fullscreen-content">
           <Routes>
             <Route path="/" element={<RestaurantList />} />  {/* Default route */}
             <Route path="/idealista" element={<EmptyLocalsMap />} />  {/* Dashboard route */}
             <Route path="/interactive-maps" element={<InteractiveMaps />} />  {/* Dashboard route */}
+            <Route path="/map/:neighborhood" element={<NeighborhoodMap />} />
+
 
           </Routes>
         </div>

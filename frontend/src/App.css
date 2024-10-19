@@ -36,3 +36,8 @@
     transform: rotate(360deg);
   }
 }
+.fullscreen-content {
+  width: calc(100% - 4cm);  /* Ancho completo menos 2cm (1cm de cada lado) */
+  margin: 1cm auto;  /* Margen de 1cm a cada lado */
+  height: calc(100vh - 4cm);  /* Altura completa de la pantalla menos 2cm para los márgenes */
+}
