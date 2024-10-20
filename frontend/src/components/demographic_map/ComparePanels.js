@@ -81,7 +81,7 @@ const ComparePanel = ({ neighborhoodsData }) => {
                 >
                   ❌
                 </button>
-                <InformationPanel selectedNeighborhood={selectedData} />
+                anel selectedNeighborhood={selectedData} />
               </div>
             );
           })}

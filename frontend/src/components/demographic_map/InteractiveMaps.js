@@ -165,9 +165,9 @@ const InteractiveMaps = ({ filters }) => {
 
         {/* Information Panel Section */}
         <div style={{ width: "40%", padding: "10px", overflowY: "scroll", backgroundColor: "#fff7f8" }}>
-        <p id="json-neighborhood">
+      {/*}  <p id="json-neighborhood">
         {selectedNeighborhood ? JSON.stringify(selectedNeighborhood, null, 2) : 'No hay barrio seleccionado'}
-      </p>
+      </p>*/}
           <InformationPanel selectedNeighborhood={selectedNeighborhood} barcelonaData={barcelonaData} />
         </div>
       </div>

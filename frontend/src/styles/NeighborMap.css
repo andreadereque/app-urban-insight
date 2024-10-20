@@ -1,0 +1,21 @@
+.map-info-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Alinea el mapa y el panel de información en la parte superior */
+  }
+  
+  .map-info-container .leaflet-container {
+    flex: 1;
+    margin-right: 20px; /* Añade un margen entre el mapa y el panel de información */
+  }
+  
+  .information-panel {
+    width: 400px; /* Haz que el panel sea más pequeño como un sidebar */
+    height: 650px; /* Ajusta la altura para que coincida con la del mapa */
+    background-color: #f5f5f5; /* Color de fondo del panel */
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Añade una sombra para darle profundidad */
+    overflow-y: auto; /* Permite hacer scroll si hay demasiada información */
+  }
+  
