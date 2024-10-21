@@ -17,14 +17,16 @@ app.config["MONGO_URI"] = "mongodb://localhost:27017/urban_insight_data"
 mongo = PyMongo(app)
 logging.basicConfig(level=logging.WARNING)
 
-# Crear índices necesarios
-mongo.db.restaurants.create_index([("Geometry.coordinates", "2dsphere")], background=True)
-
 # Servicios
 restaurant_service = RestaurantService(mongo)
 demographics_service = DemographicService(mongo)
 empty_local_service = EmptyLocalsService(mongo)
 transport_service = TransportService(mongo)
+
+@app.route('/association_rules', methods=['GET'])
+def get_association_rules():
+    results = mongo.db['association_rules'].find({}, {"_id": 0})
+    return list(results)
 
 @app.route('/nearby_restaurants', methods=['GET'])
 def get_nearby_restaurants():
