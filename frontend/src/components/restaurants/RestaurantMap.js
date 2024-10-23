@@ -252,9 +252,9 @@ const RestaurantMap = ({ filteredRestaurants }) => {
         <MapContainer
           ref={mapRef}
           center={[41.3851, 2.1734]}
-          zoom={13}
+          zoom={12}
           style={{ height: '100%', width: '100%' }}
-          minZoom={13}
+          minZoom={12}
           maxZoom={18}
           maxBounds={[[41.2, 2.0], [41.5, 2.3]]}  // Límite para Barcelona
         >

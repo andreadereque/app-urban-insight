@@ -2,56 +2,48 @@ import React, { useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 
 const AveragePriceBarChart = ({ localPrices }) => {
-  const [visibleCount, setVisibleCount] = useState(20); // Controla cuántos barrios mostrar
+  // Estado para controlar cuántos barrios se muestran
+  const [visibleCount, setVisibleCount] = useState(20);
 
-  // Función para obtener los colores según el número de locales
+  // Función para obtener los colores según el precio medio
   const getColor = (average_price, opacity = 1) => {
-    return average_price > 700 ? `rgba(128, 0, 38, 0.7)` :    // #800026
-           average_price > 500 ? `rgba(189, 0, 38,  0.7)` :    // #BD0026
-           average_price > 300 ? `rgba(227, 26, 28,  0.7)` :   // #E31A1C
-           average_price > 200 ? `rgba(252, 78, 42,  0.7)` :   // #FC4E2A
-           average_price > 100 ? `rgba(253, 141, 60,  0.7)` :  // #FD8D3C
-           average_price > 50  ? `rgba(254, 178, 76,  0.7)` :  // #FEB24C
-                                 `rgba(255, 237, 160,  0.7)`;  // #FFEDA0
-};
+    return average_price > 20000 ? `rgba(128, 0, 38, 0.7)` :  // #800026
+           average_price > 15000 ? `rgba(189, 0, 38,  0.7)` :  // #BD0026
+           average_price > 10000 ? `rgba(227, 26, 28,  0.7)` : // #E31A1C
+           average_price > 5000  ? `rgba(252, 78, 42,  0.7)` : // #FC4E2A
+           average_price > 2500  ? `rgba(253, 141, 60,  0.7)` :// #FD8D3C
+           average_price > 1000  ? `rgba(254, 178, 76,  0.7)` :// #FEB24C
+                                  `rgba(255, 237, 160,  0.7)`; // #FFEDA0
+  };
 
-
-
-  // Datos visibles limitados por el número de barrios mostrados
+  // Datos visibles, limitados por el número de barrios a mostrar
   const visibleData = localPrices.slice(0, visibleCount);
 
+  // Definición del dataset para el gráfico de barras
   const data = {
-    labels: visibleData.map(item => item.Barrio),
+    labels: visibleData.map(item => item.Barrio),  // Solo muestra los barrios visibles
     datasets: [
       {
         label: 'Precio medio de Locales',
-        data: visibleData.map(item => item.average_price),
-        backgroundColor: visibleData.map(item => getColor(item.average_price)), // Colores del gráfico
+        data: visibleData.map(item => item.average_price),  // Solo los precios de los barrios visibles
+        backgroundColor: visibleData.map(item => getColor(item.average_price)),  // Colores según los precios
       },
     ],
   };
 
+  // Opciones del gráfico
   const options = {
     plugins: {
       datalabels: {
         display: false,
-        color: 'black', // Color del texto
-        font: {
-          weight: 'bold', // Negrita
-          size: 8, // Tamaño más pequeño
-        },
-        anchor: 'center',  // Ubicación del texto dentro de la barra
-        align: 'center',   // Alinear el texto en el centro de la barra
       },
     },
-    
     scales: {
       x: {
         ticks: {
           autoSkip: false,
           maxRotation: 45,
           minRotation: 45,
-          
         },
       },
     },
@@ -63,7 +55,7 @@ const AveragePriceBarChart = ({ localPrices }) => {
     if (visibleCount >= localPrices.length) {
       alert('Ya has alcanzado el máximo número de barrios.');
     } else {
-      setVisibleCount(prev => prev + 10);
+      setVisibleCount(prev => prev + 10);  // Incrementa el número de barrios mostrados
     }
   };
 
@@ -71,7 +63,7 @@ const AveragePriceBarChart = ({ localPrices }) => {
     if (visibleCount <= 10) {
       alert('Ya has alcanzado el mínimo de barrios.');
     } else {
-      setVisibleCount(prev => prev - 10);
+      setVisibleCount(prev => prev - 10);  // Reduce el número de barrios mostrados
     }
   };
 

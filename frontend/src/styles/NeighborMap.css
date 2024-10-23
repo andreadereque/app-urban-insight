@@ -11,7 +11,7 @@
   
   .information-panel {
     width: 400px; /* Haz que el panel sea más pequeño como un sidebar */
-    height: 650px; /* Ajusta la altura para que coincida con la del mapa */
+    height: 1200px; /* Ajusta la altura para que coincida con la del mapa */
     background-color: #f5f5f5; /* Color de fondo del panel */
     padding: 10px;
     border-radius: 5px;

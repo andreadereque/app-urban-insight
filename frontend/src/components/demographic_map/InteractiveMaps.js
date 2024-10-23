@@ -113,6 +113,7 @@ const InteractiveMaps = ({ filters }) => {
       poblacion: 0,
       estudiosBajos: 0,
       trabajadoresBajaCalificacion: 0,
+      poblacionOcupada:0,
       distribucionEdad: {},
       distribucionInmigracion: {},
       distribucionHabitaciones: {},
@@ -121,11 +122,14 @@ const InteractiveMaps = ({ filters }) => {
     let totalPopulation = 0;
     neighborhoods.forEach((neighborhood) => {
       const neighborhoodPopulation = parseInt(neighborhood.Poblacion);
-
+      console.log("aaa", neighborhood)
+      console.log(aggregatedData)
       aggregatedData.poblacion += neighborhoodPopulation;
       aggregatedData.renta += parseFloat(neighborhood.Renta) * neighborhoodPopulation;
       aggregatedData.estudiosBajos += parseFloat(neighborhood['Población con estudios bajos']) * neighborhoodPopulation;
       aggregatedData.trabajadoresBajaCalificacion += parseFloat(neighborhood['Trabajadores de baja calificación']) * neighborhoodPopulation;
+      aggregatedData.poblacionOcupada += parseFloat(neighborhood['Población ocupada']) * neighborhoodPopulation;
+
       totalPopulation += neighborhoodPopulation;
 
       Object.entries(neighborhood['Distribución edad']).forEach(([key, value]) => {
@@ -142,6 +146,8 @@ const InteractiveMaps = ({ filters }) => {
     aggregatedData.renta = aggregatedData.renta / totalPopulation;
     aggregatedData.estudiosBajos = aggregatedData.estudiosBajos / totalPopulation;
     aggregatedData.trabajadoresBajaCalificacion = aggregatedData.trabajadoresBajaCalificacion / totalPopulation;
+    aggregatedData.poblacionOcupada = aggregatedData.poblacionOcupada / totalPopulation;
+
 
     setBarcelonaData(aggregatedData);
   };
@@ -174,7 +180,7 @@ const InteractiveMaps = ({ filters }) => {
       <div>
         <div style={{ padding: "10px", backgroundColor: "#fff7f8", textAlign: "center" }}>
           <button onClick={toggleComparePanel} style={{ marginBottom: '10px' }}>
-            {showComparePanel ? 'Ocultar panel comparación' : 'Comparar 2 barrios'}
+            {showComparePanel ? 'Ocultar panel comparación' : 'Comparar demográficamente por barrios'}
           </button>
         </div>
         {/* Compare Panel Section */}
@@ -186,7 +192,7 @@ const InteractiveMaps = ({ filters }) => {
       </div>
       <div style={{ padding: "10px", backgroundColor: "#fff7f8", textAlign: "center" }}>
         <button onClick={toggleCompareSimilarPanel} style={{ marginBottom: '10px' }}>
-          {showCompareSimilarPanel ? 'Ocultar panel barrios similares' : 'Comparar barrios similares'}
+          {showCompareSimilarPanel ? 'Ocultar panel barrios similares' : 'Comparar oferta por barrios'}
         </button>
       </div>
       {/* Compare Panel Section */}

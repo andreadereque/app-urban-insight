@@ -17,37 +17,37 @@ const AveragePriceMap = ({ localPrices, neighborhoods }) => {
   ]; // Lista de barrios importantes que deben mostrarse siempre
 
   const getColorForLocalPrice = (average_price) => {
-    return average_price > 700 ? '#800026' :
-           average_price > 500 ? '#BD0026' :
-           average_price > 300 ? '#E31A1C' :
-           average_price > 200 ? '#FC4E2A' :
-           average_price > 100 ? '#FD8D3C' :
-           average_price > 50  ? '#FEB24C' :
-                                 '#FFEDA0'; // Colores para precios medios
-};
+    return average_price > 20000 ? '#800026' :
+           average_price > 15000 ? '#BD0026' :
+           average_price > 10000 ? '#E31A1C' :
+           average_price > 5000  ? '#FC4E2A' :
+           average_price > 2500  ? '#FD8D3C' :
+           average_price > 1000  ? '#FEB24C' :
+                                   '#FFEDA0'; // Colores para precios medios
+  };
 
 
 
   // Añadir la leyenda personalizada
   const addLegend = (map) => {
     const legend = L.control({ position: 'bottomright' });
-
+  
     legend.onAdd = function () {
       const div = L.DomUtil.create('div', 'info legend cute-legend');
-      const grades = [0, 50, 100, 200, 300, 500, 700];
+      const grades = [0, 1000, 2500, 5000, 10000, 15000, 20000]; // Nuevos rangos
       const labels = [];
-
+  
       for (let i = 0; i < grades.length; i++) {
         div.innerHTML +=
           '<i style="background:' + getColorForLocalPrice(grades[i] + 1) + '"></i> ' +
-          grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+          grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '€<br>' : '+€');
       }
-
+  
       return div;
     };
-
+  
     legend.addTo(map);
-};
+  };
 
 
   const updateTooltipVisibility = (mapZoom) => {

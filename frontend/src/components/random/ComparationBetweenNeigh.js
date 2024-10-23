@@ -187,7 +187,7 @@ const ComparationBetweenNeigh = ({ renta }) => {
                                     <span className="comparison-content">{barrio.restaurantCount}</span>
                                 </div>
                                 <div className="comparison-item chart">
-                                    <span className="comparison-label">Top 3 Tipos de Cocina:</span>
+                                    <span className="comparison-label">Top 5 Tipos de Cocina:</span>
                                     <div className="comparison-content">
                                         {generateBarChart(barrio)}
                                     </div>

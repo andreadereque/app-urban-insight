@@ -86,14 +86,15 @@ const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
 
   return (
     <div className="information-panel">
+
       <h2>{selectedNeighborhood ? selectedNeighborhood.Nombre : 'Barcelona'}</h2>
       <p><strong>District:</strong> {selectedNeighborhood ? selectedNeighborhood.Distrito : 'All districts'}</p>
       <p><strong>Renta (Average):</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood.Renta : data.renta)}</p>
-      <p><strong>Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood.Poblacion : data['Poblacion'] || data['Población'])}</p>
-      <p><strong>Densidad de Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Densidad poblacion'] : data['Densidad poblacion'])}</p>
-      <p><strong>Población con estudios bajos:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población con estudios bajos'] : data.estudiosBajos)}%</p>
-      <p><strong>Trabajadores de baja calificación:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Trabajadores de baja calificación'] : data.trabajadoresBajaCalificacion)}%</p>
-      <p><strong>Población ocupada:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población ocupada'] : data.poblacionOcupada)}%</p>
+      <p><strong>Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood.Poblacion : data['Poblacion'] || '1655956')}</p>
+      <p><strong>Densidad de Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Densidad poblacion'] : '16339,0')}</p>
+      <p><strong>Población con estudios bajos:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población con estudios bajos'] : data['estudiosBajos'])}%</p>
+      <p><strong>Trabajadores de baja calificación:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Trabajadores de baja calificación'] : data['trabajadoresBajaCalificacion'])}%</p>
+      <p><strong>Población ocupada:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población ocupada'] : data['poblacionOcupada'])}%</p>
 
       {/* Gráfico de Distribución por Edad */}
       <h3>Distribución por Edad</h3>

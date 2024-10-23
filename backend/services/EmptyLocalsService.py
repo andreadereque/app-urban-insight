@@ -20,7 +20,7 @@ class EmptyLocalsService:
             'Precio (€/m2)': 1,
             'Barrio': 1,
             'Geometry.coordinates': 1,
-            'Accesibilidad':1,
+            'Accesibilidad': 1,
         })
         locals_list = []
         for local in empty_locals:
@@ -32,11 +32,15 @@ class EmptyLocalsService:
             precio_por_m2 = local.get("Precio (€/m2)")
             barrio = local.get("Barrio")
             accesibilidad = local.get("Accesibilidad")
-            if not direccion or direccion.strip() == "" or not coordenadas or len(coordenadas) != 2 or not titulo:
+            
+            # Ensure direccion is a string before performing any string operations
+            if not direccion or not isinstance(direccion, str) or direccion.strip() == "" or not coordenadas or len(coordenadas) != 2 or not titulo:
                 continue
+            
             precio_num = self.preprocess_price(precio_total)
             if precio_num is None or not barrio:
                 continue
+            
             locals_list.append({
                 "Título": titulo,
                 "Dirección completa": direccion,
@@ -45,10 +49,12 @@ class EmptyLocalsService:
                 "Precio (€/m2)": precio_por_m2,
                 "Barrio": barrio,
                 "Coordinates": coordenadas,
-                "Accesibilidad":accesibilidad
+                "Accesibilidad": accesibilidad
             })
+        
         logging.info(f"Total de locales válidos: {len(locals_list)}")
         return jsonify(locals_list)
+
 
     def preprocess_price(self, precio):
         if isinstance(precio, str):
