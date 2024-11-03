@@ -108,7 +108,6 @@ Este proyecto es una aplicación web basada en React que integra diversas visual
    async function obtenerDatos() {
      const respuesta = await fetch('api/datos');
      const datos = await respuesta.json();
-     console.log(datos);
    }
    ```
 

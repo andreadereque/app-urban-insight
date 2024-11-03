@@ -43,7 +43,6 @@ const NeighborhoodMap = () => {
             
             if (response.data) {
               setSelectedNeighborhoodInfo(response.data); // Set the retrieved neighborhood data in the state
-              console.log("test", response.data)
             } else {
               console.error(`No data found for neighborhood: ${selectedNeighborhoodName}`);
             }

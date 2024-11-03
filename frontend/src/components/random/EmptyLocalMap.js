@@ -130,7 +130,6 @@ const EmptyLocalsMap = () => {
       
       if (response.data) {
         setNeighborhood(response.data); // Set the retrieved neighborhood data in the state
-        console.log("test", response.data)
       } else {
         console.error(`No data found for neighborhood: ${barrio}`);
       }
@@ -140,10 +139,10 @@ const EmptyLocalsMap = () => {
   };
 
   const handleMarkerClick = (local) => {
-    console.log('LOC', local)
     const coordinates = local["Coordinates"] || []; // Asegúrate de usar "Coordinates" en lugar de Geometry.coordinates
     fetchNeighbourCompetitors(coordinates);
     const accesibilidad1 = local['Accesibilidad']// Llamas a la función con las coordenadas
+  
     setLocalAccessibility(accesibilidad1); // Guardas la accesibilidad del local seleccionado
     setClickedLocalTitle(local['Título']); // Almacenar el título del local clicado
     setClickedLocal(local)

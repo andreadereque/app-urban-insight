@@ -122,8 +122,7 @@ const InteractiveMaps = ({ filters }) => {
     let totalPopulation = 0;
     neighborhoods.forEach((neighborhood) => {
       const neighborhoodPopulation = parseInt(neighborhood.Poblacion);
-      console.log("aaa", neighborhood)
-      console.log(aggregatedData)
+
       aggregatedData.poblacion += neighborhoodPopulation;
       aggregatedData.renta += parseFloat(neighborhood.Renta) * neighborhoodPopulation;
       aggregatedData.estudiosBajos += parseFloat(neighborhood['Población con estudios bajos']) * neighborhoodPopulation;

@@ -116,10 +116,10 @@ class DemographicService:
         
     def get_neighborhood_by_name(self, barrio):
         try:
-            # Normalize the neighborhood name
+            #Normalize the neighborhood name
             normalized_barrio = normalize_name(barrio)
             
-            # Query to match the normalized neighborhood name
+            # query to match the normalized neighborhood name
             neighborhood = self.demographics_collection.find_one(
                 {
                     "$expr": {
@@ -132,7 +132,7 @@ class DemographicService:
                 {"_id": 0}  # Exclude _id from the results
             )
             
-            # If neighborhood is found, convert the coordinates and return the data
+            # Ifneighborhood is found, convert the coordinates and return the data
             if neighborhood:
                 neighborhood['Geometry']['coordinates'] = convert_utm_to_wgs84(neighborhood['Geometry']['coordinates'])
                 return neighborhood

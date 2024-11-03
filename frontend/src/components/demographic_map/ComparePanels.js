@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import InformationPanel from './InformationPanel';  // Import the InformationPanel
+import InformationPanel from './InformationPanel';  // Importa el InformationPanel
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const ComparePanel = ({ neighborhoodsData }) => {
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState([{ id: 1, value: '' }]); // Inicialmente un selector vacío
 
-
-   // Maneja el cambio en cada selector de barrio
-   const handleSelectChange = (index, event) => {
+  // Maneja el cambio en cada selector de barrio
+  const handleSelectChange = (index, event) => {
     const newNeighborhoods = [...selectedNeighborhoods];
     newNeighborhoods[index].value = event.target.value;
     setSelectedNeighborhoods(newNeighborhoods);
@@ -81,7 +80,8 @@ const ComparePanel = ({ neighborhoodsData }) => {
                 >
                   ❌
                 </button>
-                anel selectedNeighborhood={selectedData} />
+                {/* Aquí usamos el componente InformationPanel en lugar de 'anel' */}
+                <InformationPanel selectedNeighborhood={selectedData} />
               </div>
             );
           })}
