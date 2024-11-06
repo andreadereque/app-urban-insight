@@ -53,7 +53,7 @@ const AccesibilityChart = ({ data }) => {
   return (
     <div style={{ padding: '15px', backgroundColor: '#F5F7FA', borderRadius: '12px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <h3 style={{ color: '#2A3A67', fontSize: '16px', fontWeight: 'bold', margin: 0 }}>Nivel de Accesibilidad por Categoría</h3>
+        <h3 style={{ color: '#2A3A67', fontSize: '16px', fontWeight: 'bold', margin: 0 }}>Nivel de Accesibilidad</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
           <span style={{ backgroundColor: '#A4D4AE', width: '12px', height: '12px', display: 'inline-block', borderRadius: '2px' }}></span>
           <span style={{ color: '#2A3A67', fontSize: '12px' }}>Accesibilidad</span>

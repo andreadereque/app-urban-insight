@@ -80,8 +80,8 @@ const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
       <h2 style={{ color: '#2A3A67', fontSize: '18px', fontWeight: 'bold' }}>{selectedNeighborhood ? selectedNeighborhood.Nombre : 'Barcelona'}</h2>
       <p style={{ color: '#4B4B4B' }}><strong>District:</strong> {selectedNeighborhood ? selectedNeighborhood.Distrito : 'All districts'}</p>
       <p style={{ color: '#4B4B4B' }}><strong>Renta (Average):</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood.Renta : data.renta)}</p>
-      <p style={{ color: '#4B4B4B' }}><strong>Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood.Poblacion : data['Poblacion'] || '1655956')}</p>
-      <p style={{ color: '#4B4B4B' }}><strong>Densidad de Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Densidad poblacion'] : '16339,0')}</p>
+      <p style={{ color: '#4B4B4B' }}><strong>Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood.Poblacion*1000 : data['Poblacion'] || '1655956')}</p>
+      <p style={{ color: '#4B4B4B' }}><strong>Densidad de Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Densidad poblacion']*1000 : '16339,0')}</p>
       <p style={{ color: '#4B4B4B' }}><strong>Población con estudios bajos:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población con estudios bajos'] : data['estudiosBajos'])}%</p>
       <p style={{ color: '#4B4B4B' }}><strong>Trabajadores de baja calificación:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Trabajadores de baja calificación'] : data['trabajadoresBajaCalificacion'])}%</p>
       <p style={{ color: '#4B4B4B' }}><strong>Población ocupada:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población ocupada'] : data['poblacionOcupada'])}%</p>
@@ -102,8 +102,8 @@ const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
 
       {/* Gráfico de Distribución por Habitaciones */}
       {renderBarChart(
-        generateChartData(distribucionHabitaciones, 'Distribución por Habitaciones', '#ADD8E6'),
-        'Distribución por Habitaciones',
+        generateChartData(distribucionHabitaciones, 'Distribución por personas', '#ADD8E6'),
+        'Distribución por Personas en una vivienda',
         '#ADD8E6'
       )}
     </div>
