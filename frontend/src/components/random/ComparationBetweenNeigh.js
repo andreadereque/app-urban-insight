@@ -59,7 +59,7 @@ const ComparationBetweenNeigh = ({ renta }) => {
             const response = await fetch(`http://127.0.0.1:5000/api/similar_neighborhoods_by_renta/${renta}`);
             const data = await response.json();
             if (data.length > 0) {
-                await fetchAdditionalNeighborhoodData(data); // Add additional restaurant data
+                await fetchAdditionalNeighborhoodData(data);
             }
         };
 
@@ -86,7 +86,7 @@ const ComparationBetweenNeigh = ({ renta }) => {
                         {
                             label: 'Distribución de Precios',
                             data: data,
-                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                            backgroundColor: ['#F3B2C0', '#FFC914', '#FFB774', '#A4D4AE', '#B39CD0'], // Rosa Pálido, Mostaza Suave, Naranja Claro, Verde Pastel, Lavanda
                         },
                     ],
                 }}
@@ -94,8 +94,8 @@ const ComparationBetweenNeigh = ({ renta }) => {
                     responsive: true,
                     plugins: {
                         datalabels: {
-                            display: false,  // Esto asegura que los números NO se muestren
-                          },
+                            display: false,
+                        },
                         legend: {
                             position: 'bottom',
                         },
@@ -107,8 +107,12 @@ const ComparationBetweenNeigh = ({ renta }) => {
 
     // Create a bar chart for the top 3 cuisines
     const generateBarChart = (neighborhood) => {
-        const labels = neighborhood.popularCuisine.split(', ').map(cuisine => cuisine.split(' ')[0]); // Extract cuisine names
-        const data = neighborhood.popularCuisine.split(', ').map(cuisine => Number(cuisine.match(/\d+/))); // Extract counts
+        if (!neighborhood.popularCuisine) {
+            return <p style={{ color: '#4B4B4B' }}>No hay datos disponibles para los tipos de cocina.</p>;
+        }
+
+        const labels = neighborhood.popularCuisine.split(', ').map(cuisine => cuisine.split(' ')[0]);
+        const data = neighborhood.popularCuisine.split(', ').map(cuisine => Number(cuisine.match(/\d+/)));
 
         return (
             <Bar
@@ -118,7 +122,9 @@ const ComparationBetweenNeigh = ({ renta }) => {
                         {
                             label: `Tipos de Cocina en ${neighborhood.Nombre}`,
                             data: data,
-                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                            backgroundColor: ['#FF6F61', '#FFC914', '#ADD8E6'], // Coral Suave, Mostaza Suave, Azul Claro
+                            borderColor: '#2A3A67', // Azul Marino Oscuro
+                            borderWidth: 1,
                         },
                     ],
                 }}
@@ -126,8 +132,8 @@ const ComparationBetweenNeigh = ({ renta }) => {
                     responsive: true,
                     plugins: {
                         datalabels: {
-                            display: false,  // Esto asegura que los números NO se muestren
-                          },
+                            display: false,
+                        },
                         legend: {
                             display: false,
                         },
@@ -135,56 +141,71 @@ const ComparationBetweenNeigh = ({ renta }) => {
                     scales: {
                         y: {
                             beginAtZero: true,
+                            ticks: { color: '#4B4B4B' },
+                        },
+                        x: {
+                            ticks: { color: '#4B4B4B' },
                         },
                     },
                 }}
             />
         );
     };
+
     const openMapInNewTab = (neighborhoodName) => {
         const mapUrl = `http://localhost:3000/map/${neighborhoodName}`;
-        window.open(mapUrl, '_blank'); // Open the map in a new tab
+        window.open(mapUrl, '_blank');
     };
-
 
     return (
         <div className="container">
-
-            <button onClick={handleToggle}>
+            <button 
+                onClick={handleToggle} 
+                style={{ 
+                    backgroundColor: '#FF6F61', // Coral Suave para botón principal
+                    color: 'white',
+                    padding: '10px 15px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    marginBottom: '20px'
+                }}
+            >
                 {showNeighborhoods ? 'Ocultar Barrios Similares' : 'Mostrar Barrios Similares'}
             </button>
             <br /><br />
             {showNeighborhoods && (
                 <div>
-                    <h3>Barrios Similares por Renta</h3>
-                    <div className="comparison-container">
+                    <h3 style={{ color: '#2A3A67' }}>Barrios Similares por Renta</h3>
+                    <div className="comparison-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
                         {similarNeighborhoods.map((barrio, index) => (
-                            <div key={index} className="comparison-column">
+                            <div key={index} className="comparison-column" style={{ backgroundColor: '#F5F7FA', padding: '15px', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}>
                                 <div className="comparison-item">
                                     <span className="comparison-label">Barrio:</span>
-                                    <span className="comparison-content">{barrio.Nombre}</span>
+                                    <span className="comparison-content" style={{ color: '#2A3A67' }}>{barrio.Nombre}</span>
                                     <button
-                                        onClick={() => {
-                                            if (barrio.Nombre) {
-                                                // Save the neighborhood in localStorage
-                                                localStorage.setItem('lastNeighborhood', barrio.Nombre);
-                                                window.open(`/map/${barrio.Nombre}`, '_blank');
-                                            } else {
-                                                console.error("Neighborhood name is undefined");
-                                            }
+                                        onClick={() => openMapInNewTab(barrio.Nombre)}
+                                        style={{ 
+                                            marginLeft: '10px', 
+                                            padding: '5px 10px', 
+                                            borderRadius: '5px', 
+                                            backgroundColor: '#ADD8E6', // Azul Claro para un botón de acción secundaria
+                                            color: '#2A3A67', 
+                                            cursor: 'pointer',
+                                            fontWeight: 'bold' 
                                         }}
-                                        style={{ marginLeft: '10px', padding: '5px 10px', borderRadius: '5px', backgroundColor: '#4CAF50', color: 'white', cursor: 'pointer' }}>
+                                    >
                                         Ver Mapa
                                     </button>
-
                                 </div>
                                 <div className="comparison-item">
                                     <span className="comparison-label">Renta:</span>
-                                    <span className="comparison-content">{barrio.Renta}€</span>
+                                    <span className="comparison-content" style={{ color: '#4B4B4B' }}>{barrio.Renta}€</span>
                                 </div>
                                 <div className="comparison-item">
                                     <span className="comparison-label">Nº Restaurantes:</span>
-                                    <span className="comparison-content">{barrio.restaurantCount}</span>
+                                    <span className="comparison-content" style={{ color: '#4B4B4B' }}>{barrio.restaurantCount}</span>
                                 </div>
                                 <div className="comparison-item chart">
                                     <span className="comparison-label">Top 5 Tipos de Cocina:</span>
@@ -201,7 +222,6 @@ const ComparationBetweenNeigh = ({ renta }) => {
                             </div>
                         ))}
                     </div>
-
                 </div>
             )}
         </div>

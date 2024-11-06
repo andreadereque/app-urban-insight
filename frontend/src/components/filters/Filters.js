@@ -19,6 +19,7 @@ const Filters = ({
 
   return (
     <div className="filter-container">
+     
       <BarrioFilter selectedBarrios={selectedBarrios} setSelectedBarrios={setSelectedBarrios} barrios={barrios} />
 
       <CustomFilter selectedValue={selectedCategoriaCocina} setSelectedValue={setSelectedCategoriaCocina} options={categoriasCocina} placeholder="Tipo de Cocina" />

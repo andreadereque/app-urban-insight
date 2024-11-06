@@ -57,13 +57,30 @@ const RestaurantList = () => {
   const categoriasPrecio = [...new Set(restaurants.map(r => r['Categoría Precio']))];
 
   return (
-    <div className="container">
-      <h1 className="my-4">Mapa de Restaurantes</h1>
-      <p className="text-muted mb-3">
-        Total de restaurantes: <span className="badge bg-primary">{filteredRestaurants.length}</span>
+    <div style={{ padding: '20px',  borderRadius: '8px' }}>
+      <h1 style={{ margin: '20px', fontSize: '2em', color: '#2A3A67' }}>Análisis de Restaurantes</h1>
+      <p style={{
+        margin: '20px',
+        fontSize: '1.1em',
+        color: '#4B4B4B',
+        lineHeight: '1.6',
+        borderLeft: '4px solid #FF6F61',
+        paddingLeft: '16px',
+        backgroundColor: '#FFFFFF',
+        borderRadius: '4px',
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.05)',
+      }}>
+        🧭 Utiliza el análisis de esta pestaña para explorar la distribución de restaurantes en los barrios de Barcelona. Filtra por <strong>categoría de cocina</strong>, <strong>calificación</strong> y <strong>rango de precios</strong> para descubrir zonas ideales para tu negocio.
+        <br />
+        🔍 Identifica áreas con alta concentración de competencia o descubre <strong>oportunidades estratégicas</strong> en barrios menos saturados.
+        <br />
+        📊 Visualiza patrones de consumo y preferencias por barrio, usando datos precisos para apoyar tus decisiones.
+      </p>
+      <p style={{ margin: '20px', fontSize: '1em', color: '#4B4B4B' }}>
+        Total de restaurantes: <span className="badge" style={{ backgroundColor: '#FF6F61', color: '#FFFFFF', fontSize: '0.9em', padding: '8px 12px', borderRadius: '4px' }}>{filteredRestaurants.length}</span>
       </p>
       <Filters
-        selectedBarrios={selectedBarrios}  // Actualizar props para Filters
+        selectedBarrios={selectedBarrios}
         setSelectedBarrios={setSelectedBarrios}
         selectedCategoriaCocina={selectedCategoriaCocina}
         setSelectedCategoriaCocina={setSelectedCategoriaCocina}
@@ -77,7 +94,8 @@ const RestaurantList = () => {
       />
       <RestaurantMap filteredRestaurants={filteredRestaurants} />
     </div>
-  );
-};
+);
+
+}
 
 export default RestaurantList;

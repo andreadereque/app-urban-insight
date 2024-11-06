@@ -1,23 +1,32 @@
 .filter-container {
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #f9f0ff;
-    border-radius: 15px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .filter-label {
-    margin-right: 20px;
-    font-size: 1rem;
-    color: #8e44ad;
-  }
-  
-  .filter-input,
-  .filter-select {
-    margin-left: 10px;
-    padding: 5px;
-    border-radius: 10px;
-    border: 1px solid #d7bde2;
-    background-color: #fffafc;
-  }
-  
+  margin: 20px;
+  padding: 15px;
+  background-color: #ADD8E6 !important; /* Azul Suave */
+  border-radius: 15px;
+}
+
+/* Etiquetas de los filtros */
+.filter-label {
+  margin-right: 20px;
+  font-size: 1rem;
+  color: #2A3A67; /* Azul Marino */
+}
+
+/* Inputs y Selectores de Filtro */
+.filter-input,
+.filter-select {
+  margin-left: 10px;
+  padding: 5px;
+  border-radius: 10px;
+  border: 1px solid #007A99; /* Azul Teal */
+  background-color: #FFFFFF; /* Blanco Puro */
+  color: #4B4B4B; /* Gris Oscuro para el texto */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  background-color: #F9F9F9; /* Fondo claro al enfocar */
+  box-shadow: 0 0 10px rgba(0, 122, 153, 0.3); /* Sombra Azul Teal */
+  border-color: #007A99; /* Azul Teal */
+}

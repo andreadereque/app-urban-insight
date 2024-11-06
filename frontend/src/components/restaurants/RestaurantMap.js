@@ -188,97 +188,162 @@ const RestaurantMap = ({ filteredRestaurants }) => {
   };
 
   return (
-    <>
-      <div style={{ height: '800px', width: '100%' }}>  {/* Limitamos la altura del mapa */}
-        <div>
-          <button
-            onClick={() => setShowNeighborhoods(!showNeighborhoods)}
-            style={{ marginBottom: '10px', padding: '10px 20px', backgroundColor: showNeighborhoods ? '#f7c5cc' : '#e4a0b3', color: '#fff', border: '2px solid #f3b2c0', borderRadius: '30px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: 'bold', fontSize: '16px' }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = showNeighborhoods ? '#f9dfe2' : '#f4b6c2')}
-            onMouseOut={(e) => (e.target.style.backgroundColor = showNeighborhoods ? '#f7c5cc' : '#e4a0b3')}
-          >
-            {showNeighborhoods ? 'Ocultar Barrios' : 'Mostrar Barrios'}
-          </button>
-
-          <button
-            onClick={handleHeatmapClick}
-            style={{ marginBottom: '10px', marginLeft: '15px', padding: '10px 20px', backgroundColor: heatmapActive ? '#ffccac' : '#ffb07c', color: '#fff', border: '2px solid #ffc3a1', borderRadius: '30px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: 'bold', fontSize: '16px' }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = heatmapActive ? '#ffe0d0' : '#ffc49b')}
-            onMouseOut={(e) => (e.target.style.backgroundColor = heatmapActive ? '#ffccac' : '#ffb07c')}
-          >
-            {heatmapActive ? 'Desactivar Heatmap' : 'Activar Heatmap'}
-          </button>
-
-          <button
-            onClick={() => setShowTransports(!showTransports)}
-            style={{ marginBottom: '10px', marginLeft: '15px', padding: '10px 20px', backgroundColor: showTransports ? '#d0e6a5' : '#b5e48c', color: '#fff', border: '2px solid #c4e69e', borderRadius: '30px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', cursor: 'pointer', transition: 'all 0.3s ease', fontWeight: 'bold', fontSize: '16px' }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = showTransports ? '#f9dfe2' : '#f4b6c2')}
-            onMouseOut={(e) => (e.target.style.backgroundColor = showTransports ? '#f7c5cc' : '#e4a0b3')}
-          >
-            {showTransports ? 'Ocultar Transportes' : 'Mostrar Transportes'}
-          </button>
-          {/* Select de transporte */}
-          {showTransports && (
-            <select
-              value={selectedTransportType}
-              onChange={(e) => setSelectedTransportType(e.target.value)}
-              style={{
-                marginBottom: '10px',
-                marginLeft: '15px',
-                padding: '10px',
-                borderRadius: '10px',
-                border: '1px solid #ccc',
-                fontSize: '16px',
-              }}
+    <div  style={{ height: '800px', width: 'flex' , margin: '20px'}}>
+        <div style={{backgroundColor:'#FFFFF'}}>
+            {/* Botón Mostrar/Ocultar Barrios */}
+            <button
+                onClick={() => setShowNeighborhoods(!showNeighborhoods)}
+                style={{
+                    marginBottom: '10px',
+                    padding: '10px 25px',
+                    backgroundColor: showNeighborhoods ? '#2A3A67' : '#FF6F61', // Azul Marino y Coral Suave
+                    color: '#FFFFFF',
+                    border: `2px solid ${showNeighborhoods ? '#2A3A67' : '#FF6F61'}`, // Color de borde igual al fondo
+                    borderRadius: '15px',
+                    boxShadow: '0 6px 10px rgba(0, 0, 0, 0.2)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    fontWeight: 'bold',
+                    fontSize: '16px',
+                    letterSpacing: '0.5px'
+                }}
+                onMouseOver={(e) => (e.target.style.backgroundColor = showNeighborhoods ? '#4B4B4B' : '#FFC914')}
+                onMouseOut={(e) => (e.target.style.backgroundColor = showNeighborhoods ? '#2A3A67' : '#FF6F61')}
             >
-              <option value="">Todos los transportes</option>
-              <option value="BUS">BUS</option>
-              <option value="METRO">METRO</option>
-              <option value="FGC">FGC</option>
-              <option value="RENFE">RENFE</option>
-              <option value="Parking">PARKING</option>
+                {showNeighborhoods ? 'Ocultar Barrios' : 'Mostrar Barrios'}
+            </button>
 
-            </select>
-          )}
-          {showWarning && (
-            <div style={{ padding: '20px', backgroundColor: '#ffcccc', border: '1px solid #ff0000', marginTop: '20px' }}>
-              <p>No puedes activar el heatmap sin antes mostrar los barrios.</p>
-              <button onClick={closeWarning} style={{ padding: '10px', backgroundColor: '#ff6666', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-                Cerrar
-              </button>
-            </div>
-          )}
+            {/* Botón Activar/Desactivar Heatmap */}
+            <button
+                onClick={handleHeatmapClick}
+                style={{
+                    marginBottom: '10px',
+                    marginLeft: '15px',
+                    padding: '10px 25px',
+                    backgroundColor: heatmapActive ? '#ADD8E6' : '#A4D4AE', // Azul Claro y Verde Pastel
+                    color: '#2A3A67', // Azul Marino para el texto
+                    border: `2px solid ${heatmapActive ? '#ADD8E6' : '#A4D4AE'}`, // Borde igual al fondo
+                    borderRadius: '15px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    fontWeight: '600',
+                    fontSize: '16px'
+                }}
+                onMouseOver={(e) => (e.target.style.backgroundColor = heatmapActive ? '#FFC914' : '#FFB774')}
+                onMouseOut={(e) => (e.target.style.backgroundColor = heatmapActive ? '#ADD8E6' : '#A4D4AE')}
+            >
+                {heatmapActive ? 'Desactivar Heatmap' : 'Activar Heatmap'}
+            </button>
+
+            {/* Botón Mostrar/Ocultar Transportes */}
+            <button
+                onClick={() => setShowTransports(!showTransports)}
+                style={{
+                    marginBottom: '10px',
+                    marginLeft: '15px',
+                    padding: '10px 25px',
+                    backgroundColor: showTransports ? '#B5E48C' : '#FFC914', // Verde Suave y Mostaza
+                    color: '#4B4B4B', // Gris Oscuro para el texto
+                    border: `2px solid ${showTransports ? '#B5E48C' : '#FFC914'}`, // Borde igual al fondo
+                    borderRadius: '15px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    fontWeight: 'bold',
+                    fontSize: '16px'
+                }}
+                onMouseOver={(e) => (e.target.style.backgroundColor = showTransports ? '#FF6F61' : '#A4D4AE')}
+                onMouseOut={(e) => (e.target.style.backgroundColor = showTransports ? '#B5E48C' : '#FFC914')}
+            >
+                {showTransports ? 'Ocultar Transportes' : 'Mostrar Transportes'}
+            </button>
+
+            {/* Select de transporte */}
+            {showTransports && (
+              <>
+                <select
+                    value={selectedTransportType}
+                    onChange={(e) => setSelectedTransportType(e.target.value)}
+                    style={{
+                        marginBottom: '10px',
+                        marginLeft: '15px',
+                        padding: '10px',
+                        borderRadius: '10px',
+                        border: '1px solid #4B4B4B', // Gris Oscuro para el borde del selector
+                        fontSize: '16px',
+                        backgroundColor: '#E8E8E8', // Gris Claro como fondo
+                        color: '#2A3A67' // Azul Marino para el texto
+                    }}
+                >
+                    <option value="">Todos los transportes</option>
+                    <option value="BUS">BUS</option>
+                    <option value="METRO">METRO</option>
+                    <option value="FGC">FGC</option>
+                    <option value="RENFE">RENFE</option>
+                    <option value="Parking">PARKING</option>
+                </select>
+                 {/* Texto informativo sobre el zoom */}
+        <p style={{
+          marginLeft: '15px',
+          fontSize: '14px',
+          color: '#4B4B4B', // Gris Oscuro para el texto
+          fontStyle: 'italic',
+      }}>
+          🚍 Si haces zoom, podrás ver los diferentes transportes que hay en cada zona.
+      </p>
+                </>
+            )}
+
+            {showWarning && (
+                <div style={{ padding: '20px', backgroundColor: '#FF6F61', border: '1px solid #FF6F61', marginTop: '20px' }}>
+                    <p>No puedes activar el heatmap sin antes mostrar los barrios.</p>
+                    <button
+                        onClick={closeWarning}
+                        style={{
+                            padding: '10px',
+                            backgroundColor: '#FFC914', // Mostaza para el botón de cerrar advertencia
+                            color: '#FFFFFF',
+                            border: `2px solid #FFC914`, // Borde igual al fondo
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            )}
         </div>
+        
+        {/* Map Container */}
         <MapContainer
-          ref={mapRef}
-          center={[41.3851, 2.1734]}
-          zoom={12}
-          style={{ height: '100%', width: '100%' }}
-          minZoom={12}
-          maxZoom={18}
-          maxBounds={[[41.2, 2.0], [41.5, 2.3]]}  // Límite para Barcelona
+            ref={mapRef}
+            center={[41.3851, 2.1734]}
+            zoom={12}
+            style={{ height: '100%', width: '100%' }}
+            minZoom={12}
+            maxZoom={18}
+            maxBounds={[[41.2, 2.0], [41.5, 2.3]]}
         >
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'"
-            attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
-          />
-          <MarkerClusterGroup iconCreateFunction={ClusterCustomIcon}>
-            <RestaurantMarkers filteredRestaurants={filteredRestaurants} icon={RestaurantIcon} />
-          </MarkerClusterGroup>
+            <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'"
+                attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
+            />
+            <MarkerClusterGroup iconCreateFunction={ClusterCustomIcon}>
+                <RestaurantMarkers filteredRestaurants={filteredRestaurants} icon={RestaurantIcon} />
+            </MarkerClusterGroup>
 
-          {/* Añadir la leyenda del heatmap */}
-          <HeatmapLegend map={mapRef.current} />
-
+            {/* Añadir la leyenda del heatmap */}
+            <HeatmapLegend map={mapRef.current} />
         </MapContainer>
-        <div style={{ width: '100%' }}>
-          {/* HeatmapCharts - los gráficos debajo del mapa */}
-          <Dashboard filteredRestaurants={filteredRestaurants}
-           /> {/* Añadimos el componente de gráficos */}
-        </div>
 
-      </div>
-    </>
-  );
-};
+        <div style={{ width: '100%' }}>
+            {/* HeatmapCharts - los gráficos debajo del mapa */}
+            <Dashboard filteredRestaurants={filteredRestaurants} />
+        </div>
+    </div>
+);
+
+}
 
 export default RestaurantMap;

@@ -3,8 +3,8 @@
     align-items: center !important;
     justify-content: center !important;
     border-radius: 50% !important;
-    background: rgba(255, 105, 180, 0.9) !important; /* Fondo rosado con mayor opacidad */
-    border: 3px solid #f06292 !important; /* Borde rosado más grueso */
+    background: rgba(255, 111, 97, 0.9) !important; /* Coral Soft con mayor opacidad */
+    border: 3px solid #FFB774 !important; /* Borde Soft Orange */
     width: 50px !important;
     height: 50px !important;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Añadir sombra para resaltar el ícono */
@@ -25,6 +25,7 @@
     height: 50px !important;
 }
 
+
 .cluster-icon {
     color: #ffffff !important;
     font-size: 16px !important;
@@ -34,11 +35,11 @@
 .map-container {
     display: flex;
     height: 100vh;
+    margin:20px
   }
   
   .sidebar {
-    width: 40%;
-    padding: 20px;
+    width: 50%;
     background-color: #f5f5f5;
     overflow-y: auto;
   }

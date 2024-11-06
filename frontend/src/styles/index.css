@@ -1,3 +1,4 @@
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -14,7 +15,9 @@ code {
   margin: 0 auto;
   padding: 20px;
 }
-
+.container-botones {
+  margin: 20px
+}
 .custom-cluster-icon {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -34,8 +37,10 @@ code {
   background-color: #fff;
   padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #7018aa;
+
 }
+
 
 /* Estilo de los filtros individuales */
 .filter-select {
@@ -54,28 +59,54 @@ code {
   box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
   border-color: #ff6f61;
 }
+/* Contenedor de filtros */
+.filter-container {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #E8E8E8; /* Gris Claro Suave */
+  border-radius: 15px;
+}
 
+/* Etiquetas de los filtros */
+.filter-label {
+  margin-right: 20px;
+  font-size: 1rem;
+  color: #2A3A67; /* Azul Marino */
+}
+
+/* Inputs y Selectores de Filtro */
+.filter-input,
+.filter-select {
+  margin-left: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ADD8E6; /* Azul Claro para un borde sutil */
+  background-color: #FFFFFF; /* Blanco para mantenerlo limpio */
+  color: #4B4B4B; /* Gris Oscuro para el texto */
+  font-size: 14px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  background-color: #F9F9F9; /* Fondo claro al enfocar */
+  box-shadow: 0 0 10px rgba(0, 122, 153, 0.3); /* Sombra Azul Teal */
+  border-color: #007A99; /* Azul Teal */
+}
+
+/* Botón para limpiar filtros */
 /* Botón para limpiar filtros */
 .btn-clear-filters {
   padding: 10px 20px;
-  background-color: #ff6f61;
-  border: none;
+  background-color: #007A99; /* Azul Teal para un look profesional y destacado */
+  border: 2px solid #007A99; /* Borde del mismo color para cohesión */
   border-radius: 25px;
-  color: white;
+  color: #FFFFFF;
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
 .btn-clear-filters:hover {
-  background-color: #ff856d;
-}
-
-.text-file-custom {
-  width: 400px;
-}
-
-/* Pequeña animación al hacer hover sobre los selectores */
-.filter-select:hover {
-  background-color: #f9f9f9;
+  background-color: #FF6F61; /* Coral Suave al hacer hover para un cambio atractivo */
 }

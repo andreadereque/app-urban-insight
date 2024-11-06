@@ -12,12 +12,11 @@ import '../../styles/EmptyLocalMaps.css'; // Asegúrate de tener este archivo CS
 import axios from 'axios';
 import CompetitorChart from './CompetitorChart'; // Nuevo componente para gráficos
 import ClickedLocalDetails from './ClickedLocalDetails'; // Nuevo componente para gráficos
-
 import NeighborhoodStatsContainer from './NeighborhoodStatsContainer';
+
 // Función para crear iconos personalizados para los clústeres
 const createClusterCustomIcon = (cluster) => {
   const count = cluster.getChildCount();
-
   let size = 'large';
   let dimension = 50; // Tamaño base
 
@@ -45,13 +44,9 @@ const EmptyLocalsMap = () => {
   const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
   const [competitorsData, setCompetitorsData] = useState(null);
   const [localAccessibility, setLocalAccessibility] = useState(null);
-  const [clickedLocalTitle, setClickedLocalTitle] = useState(null); // Nuevo estado para el título
-  const [clickedLocal, setClickedLocal] = useState(null); // Nuevo estado para el título
+  const [clickedLocalTitle, setClickedLocalTitle] = useState(null);
+  const [clickedLocal, setClickedLocal] = useState(null);
   const [neighborhood, setNeighborhood] = useState([]);
-
-
-
-
 
   const emptyLocalIcon = new L.Icon({
     iconUrl: idealistaIconPath,
@@ -106,11 +101,9 @@ const EmptyLocalsMap = () => {
     }
   };
 
-
   const fetchNeighbourCompetitors = async (coordinates) => {
     try {
       const [lon, lat] = coordinates; // Asegúrate de extraer latitud y longitud correctamente
-      // Realiza la solicitud GET con los parámetros adecuados
       const response = await axios.get('http://127.0.0.1:5000/api/neighbours_competitors', {
         params: {
           lat: lat,
@@ -123,13 +116,12 @@ const EmptyLocalsMap = () => {
       console.error('Error al obtener competidores cercanos:', error);
     }
   };
+
   const setTheNeighborhood = async (barrio) => {
     try {
-      // Call the demographics endpoint with the specific neighborhood name
       const response = await axios.get(`http://127.0.0.1:5000/api/demographics_by_name?barrio=${encodeURIComponent(barrio)}`);
-      
       if (response.data) {
-        setNeighborhood(response.data); // Set the retrieved neighborhood data in the state
+        setNeighborhood(response.data);
       } else {
         console.error(`No data found for neighborhood: ${barrio}`);
       }
@@ -141,20 +133,18 @@ const EmptyLocalsMap = () => {
   const handleMarkerClick = (local) => {
     const coordinates = local["Coordinates"] || []; // Asegúrate de usar "Coordinates" en lugar de Geometry.coordinates
     fetchNeighbourCompetitors(coordinates);
-    const accesibilidad1 = local['Accesibilidad']// Llamas a la función con las coordenadas
+    const accesibilidad1 = local['Accesibilidad'];
   
     setLocalAccessibility(accesibilidad1); // Guardas la accesibilidad del local seleccionado
     setClickedLocalTitle(local['Título']); // Almacenar el título del local clicado
-    setClickedLocal(local)
-    setTheNeighborhood(local['Barrio'])
-
+    setClickedLocal(local);
+    setTheNeighborhood(local['Barrio']);
   };
+
   useEffect(() => {
     if (localAccessibility !== null) {
     }
   }, [localAccessibility]);
-
-
 
   const filteredLocals = locals.filter((local) => {
     const matchesBarrio = filters.barrio ? local.Barrio === filters.barrio : true;
@@ -163,16 +153,38 @@ const EmptyLocalsMap = () => {
     return matchesBarrio && matchesPrecioMin && matchesPrecioMax;
   });
 
-
   const barrios = [...new Set(locals.map((local) => local.Barrio))].filter(Boolean);
 
   return (
-    <>
+    <div style={{ padding: '20px', backgroundColor: '#F5F7FA', borderRadius: '8px', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)' }}>
+      {/* Título y Descripción */}
+      <h1 style={{ margin: '20px', fontSize: '2em', color: '#2A3A67' }}>Análisis de Espacios Comerciales</h1>
+      <p style={{
+        margin: '20px',
+        fontSize: '1.1em',
+        color: '#4B4B4B',
+        lineHeight: '1.6',
+        borderLeft: '4px solid #FF6F61',
+        paddingLeft: '16px',
+        backgroundColor: '#FFFFFF',
+        borderRadius: '4px',
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.05)',
+      }}>
+        🏬 En esta pestaña, utiliza la herramienta interactiva para analizar los locales disponibles en Barcelona. 
+        Filtra por <strong>barrio</strong>, <strong>rango de precios</strong> y <strong>accesibilidad</strong> para evaluar la viabilidad de abrir un nuevo negocio.
+        <br />
+        🔍 Al seleccionar un local, podrás visualizar la competencia cercana y obtener datos sobre la densidad de restaurantes, 
+        sus categorías, precios y calificaciones, lo que te permitirá identificar oportunidades estratégicas.
+        <br />
+        📊 Compara barrios con rentas similares y explora estadísticas clave para tomar decisiones informadas basadas en datos precisos.
+      </p>
+      <p style={{ margin: '20px', fontSize: '1em', color: '#4B4B4B' }}>
+        Total de locales: <span className="badge" style={{ backgroundColor: '#FF6F61', color: '#FFFFFF', fontSize: '0.9em', padding: '8px 12px', borderRadius: '4px' }}>{filteredLocals.length}</span>
+      </p>
+      
       <EmptyLocalFilters barrios={barrios} onFilterChange={handleFilterChange} />
-      <p>Al final de esta pestaña encontraras un apartado donde te ira dando informaicón y comparativas acerca los locales seleccionados</p>
 
       <div className="map-container">
-
         <MapContainer center={[41.3851, 2.1734]} zoom={13} style={{ height: '100%', width: '100%' }}>
           <MapController neighborhoods={neighborhoods} />
           {typeof MarkerClusterGroup !== 'undefined' && (
@@ -200,16 +212,14 @@ const EmptyLocalsMap = () => {
             <CompetitorChart data={competitorsData} accessibility={localAccessibility} />
           </div>
         )}
-
       </div>
-      <div>
+      <div style={{ margin: '20px' }}>
         <h2>Estadísticas de Locales por Barrio</h2>
         <NeighborhoodStatsContainer />
       </div>
       <br /> 
       <ClickedLocalDetails title={clickedLocalTitle} infoNearRestaurants={nearbyRestaurants} local={clickedLocal} neighborhood={neighborhood} />
-
-    </>
+    </div>
   );
 }
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend } from 'chart.js';
 
-// Registra las escalas y elementos necesarios para Chart.js
-Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend, ChartDataLabels);
 
 const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
   const data = selectedNeighborhood || barcelonaData;
@@ -17,113 +17,94 @@ const InformationPanel = ({ selectedNeighborhood, barcelonaData }) => {
     return parseFloat(value.toString().replace(',', '.')).toFixed(2);
   };
 
-  // Manejar las diferentes claves para Barcelona y barrios
   const distribucionEdad = data.distribucionEdad || data['Distribución edad'];
   const distribucionInmigracion = data.distribucionInmigracion || data['Distribución immigración'];
   const distribucionHabitaciones = data.distribucionHabitaciones || data['Distribución habitación por casas'];
 
-  // Datos para los gráficos
-  const barDataEdad = {
-    labels: Object.keys(distribucionEdad || {}),
+  const generateChartData = (data, label, backgroundColor) => ({
+    labels: Object.keys(data || {}),
     datasets: [
       {
-        label: 'Distribución por Edad',
-        data: Object.values(distribucionEdad || {}).map((value) => parseFloat(value)),
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        label,
+        data: Object.values(data || {}).map((value) => parseFloat(value)),
+        backgroundColor,
+        borderColor: '#2A3A67', // Azul Marino
         borderWidth: 1,
       },
     ],
-  };
+  });
 
-  const barDataInmigracion = {
-    labels: Object.keys(distribucionInmigracion || {}),
-    datasets: [
-      {
-        label: 'Distribución por Inmigración',
-        data: Object.values(distribucionInmigracion || {}).map((value) => parseFloat(value)),
-        backgroundColor: 'rgba(153, 102, 255, 0.6)',
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const barDataHabitaciones = {
-    labels: Object.keys(distribucionHabitaciones || {}),
-    datasets: [
-      {
-        label: 'Distribución por Habitaciones',
-        data: Object.values(distribucionHabitaciones || {}).map((value) => parseFloat(value)),
-        backgroundColor: 'rgba(255, 159, 64, 0.6)',
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  // Opciones de tamaño flexible para los gráficos
   const chartOptions = {
-    maintainAspectRatio: true, // Mantener el aspecto, pero flexible
-    responsive: true,
     plugins: {
       datalabels: {
-        display: false,  // Esto oculta los números dentro de las barras
-      },
-      legend: {
-        display: true,
+        display: false,
       },
       tooltip: {
-        enabled: true,
+        backgroundColor: '#FF6F61', // Coral
+        titleColor: '#FFFFFF',
+        bodyColor: '#FFFFFF',
+        borderColor: '#FFC914', // Mostaza
+        borderWidth: 1,
       },
     },
     scales: {
       x: {
-        beginAtZero: true,
+        ticks: {
+          color: '#4B4B4B', // Gris oscuro
+        },
       },
       y: {
         beginAtZero: true,
+        ticks: {
+          color: '#4B4B4B', // Gris oscuro
+        },
       },
     },
   };
 
-  return (
-    <div className="information-panel">
+  const renderBarChart = (chartData, title, legendColor) => (
+    <div style={{ padding: '15px', backgroundColor: '#F5F7FA', borderRadius: '12px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <h3 style={{ color: '#2A3A67', fontSize: '16px', fontWeight: 'bold', margin: 0 }}>{title}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <span style={{ backgroundColor: legendColor, width: '12px', height: '12px', display: 'inline-block', borderRadius: '2px' }}></span>
+          <span style={{ color: '#2A3A67', fontSize: '12px' }}>{title}</span>
+        </div>
+      </div>
+      <Bar data={chartData} options={chartOptions} />
+    </div>
+  );
 
-      <h2>{selectedNeighborhood ? selectedNeighborhood.Nombre : 'Barcelona'}</h2>
-      <p><strong>District:</strong> {selectedNeighborhood ? selectedNeighborhood.Distrito : 'All districts'}</p>
-      <p><strong>Renta (Average):</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood.Renta : data.renta)}</p>
-      <p><strong>Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood.Poblacion : data['Poblacion'] || '1655956')}</p>
-      <p><strong>Densidad de Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Densidad poblacion'] : '16339,0')}</p>
-      <p><strong>Población con estudios bajos:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población con estudios bajos'] : data['estudiosBajos'])}%</p>
-      <p><strong>Trabajadores de baja calificación:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Trabajadores de baja calificación'] : data['trabajadoresBajaCalificacion'])}%</p>
-      <p><strong>Población ocupada:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población ocupada'] : data['poblacionOcupada'])}%</p>
+  return (
+    <div style={{ padding: '20px', backgroundColor: '#F5F7FA', borderRadius: '12px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}>
+      <h2 style={{ color: '#2A3A67', fontSize: '18px', fontWeight: 'bold' }}>{selectedNeighborhood ? selectedNeighborhood.Nombre : 'Barcelona'}</h2>
+      <p style={{ color: '#4B4B4B' }}><strong>District:</strong> {selectedNeighborhood ? selectedNeighborhood.Distrito : 'All districts'}</p>
+      <p style={{ color: '#4B4B4B' }}><strong>Renta (Average):</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood.Renta : data.renta)}</p>
+      <p style={{ color: '#4B4B4B' }}><strong>Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood.Poblacion : data['Poblacion'] || '1655956')}</p>
+      <p style={{ color: '#4B4B4B' }}><strong>Densidad de Población:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Densidad poblacion'] : '16339,0')}</p>
+      <p style={{ color: '#4B4B4B' }}><strong>Población con estudios bajos:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población con estudios bajos'] : data['estudiosBajos'])}%</p>
+      <p style={{ color: '#4B4B4B' }}><strong>Trabajadores de baja calificación:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Trabajadores de baja calificación'] : data['trabajadoresBajaCalificacion'])}%</p>
+      <p style={{ color: '#4B4B4B' }}><strong>Población ocupada:</strong> {formatNumber(selectedNeighborhood ? selectedNeighborhood['Población ocupada'] : data['poblacionOcupada'])}%</p>
 
       {/* Gráfico de Distribución por Edad */}
-      <h3>Distribución por Edad</h3>
-      {distribucionEdad ? (
-        <div style={{ height: 'auto', width: '100%' }}> {/* Ancho 100% para ajustar dinámicamente */}
-          <Bar data={barDataEdad} options={chartOptions} />
-        </div>
-      ) : (
-        <p>No data available</p>
+      {renderBarChart(
+        generateChartData(distribucionEdad, 'Distribución por Edad', '#FF6F61'),
+        'Distribución por Edad',
+        '#FF6F61'
       )}
 
       {/* Gráfico de Distribución por Inmigración */}
-      <h3>Distribución por Inmigración</h3>
-      {distribucionInmigracion ? (
-        <div style={{ height: 'auto', width: '100%' }}> {/* Ancho 100% para ajustar dinámicamente */}
-          <Bar data={barDataInmigracion} options={chartOptions} />
-        </div>
-      ) : (
-        <p>No data available</p>
+      {renderBarChart(
+        generateChartData(distribucionInmigracion, 'Distribución por Inmigración', '#A4D4AE'),
+        'Distribución por Inmigración',
+        '#A4D4AE'
       )}
 
       {/* Gráfico de Distribución por Habitaciones */}
-      <h3>Distribución por Habitaciones</h3>
-      {distribucionHabitaciones ? (
-        <div style={{ height: 'auto', width: '100%' }}> {/* Ancho 100% para ajustar dinámicamente */}
-          <Bar data={barDataHabitaciones} options={chartOptions} />
-        </div>
-      ) : (
-        <p>No data available</p>
+      {renderBarChart(
+        generateChartData(distribucionHabitaciones, 'Distribución por Habitaciones', '#ADD8E6'),
+        'Distribución por Habitaciones',
+        '#ADD8E6'
       )}
     </div>
   );

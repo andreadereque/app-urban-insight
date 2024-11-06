@@ -2,20 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import TreeMapComponent from './TreeMapComponent';
+import Modal from 'react-modal';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, ChartDataLabels);
 
 const Dashboard = ({ filteredRestaurants }) => {
     const [topChartData, setTopChartData] = useState(null);
+    const [cuisineChartData, setCuisineChartData] = useState(null);
     const [maxTopCount, setMaxTopCount] = useState(null);
-    const [treeMapData, setTreeMapData] = useState(null);
-    const [selectedBarrio, setSelectedBarrio] = useState(''); // Definir selectedBarrio aquí
+    const [maxCuisineCount, setMaxCuisineCount] = useState(null);
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [modalContent, setModalContent] = useState('');
 
     useEffect(() => {
         if (!filteredRestaurants || filteredRestaurants.length === 0) {
             setTopChartData(null);
-            setTreeMapData(null);
+            setCuisineChartData(null);
             return;
         }
 
@@ -27,7 +29,6 @@ const Dashboard = ({ filteredRestaurants }) => {
         }, {});
 
         const sortedBarrios = Object.entries(restaurantCountsByBarrio).sort((a, b) => b[1] - a[1]);
-
         const top10Barrios = sortedBarrios.slice(0, 10);
         const topBarrios = top10Barrios.map((item) => item[0]);
         const topCountsArray = top10Barrios.map((item) => item[1]);
@@ -35,7 +36,6 @@ const Dashboard = ({ filteredRestaurants }) => {
         const maxCount = Math.max(...topCountsArray);
         setMaxTopCount(maxCount);
 
-        // Asignar los datos al gráfico de barras
         setTopChartData({
             labels: topBarrios,
             datasets: [
@@ -48,193 +48,7 @@ const Dashboard = ({ filteredRestaurants }) => {
             ],
         });
 
-        // Preparar los datos para TreeMap
-        const treeMapChildren = sortedBarrios.map(([barrio, value]) => ({
-            name: barrio,
-            value,
-            color: getHeatmapColor(value, maxCount)
-        })).slice(0, 10);
-
-        setTreeMapData({
-            name: 'Barrios',
-            children: treeMapChildren
-        });
-
-    }, [filteredRestaurants]);
-
-    // Función para obtener color basado en el valor máximo
-    const getHeatmapColor = (value, maxValue) => {
-        const ratio = value / maxValue;
-        if (ratio > 0.9) return 'rgba(255, 69, 0, 0.8)';
-        if (ratio > 0.7) return 'rgba(255, 140, 0, 0.8)';
-        if (ratio > 0.5) return 'rgba(255, 195, 0, 0.8)';
-        if (ratio > 0.3) return 'rgba(240, 240, 0, 0.8)';
-        if (ratio > 0.1) return 'rgba(173, 255, 47, 0.8)';
-        return 'rgba(0, 255, 127, 0.8)';
-    };
-
-    // Manejar el cambio de barrio para el heatmap de cocina
-    const handleBarrioChange = (event) => {
-        setSelectedBarrio(event.target.value);
-    };
-
-    return (
-        <div style={styles.dashboardContainer}>
-            {/* Gráfico de barras (Top 10 Barrios) */}
-            <div style={styles.chartContainer}>
-                {topChartData && topChartData.labels ? (
-                    <>
-                        <Bar
-                            data={topChartData}
-                            options={{
-                                maintainAspectRatio: false,
-                                indexAxis: 'x',
-                                barThickness: 25,
-                                scales: {
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: 'Distrito (Top 10)',
-                                            font: {
-                                                size: 14,
-                                                weight: 'bold',
-                                            },
-                                        },
-                                        ticks: {
-                                            maxRotation: 90,
-                                            minRotation: 90,
-                                            font: {
-                                                size: 12,
-                                            },
-                                        },
-                                    },
-                                    y: {
-                                        display: false,
-                                    },
-                                },
-                                plugins: {
-                                    datalabels: {
-                                        display: false,  // Esto asegura que los números NO se muestren
-                                      },
-                                    legend: { display: false },
-                                    title: {
-                                        display: true,
-                                        text: 'Top 10 Barrios por Densidad de Restaurantes',
-                                        font: {
-                                            size: 16,
-                                            weight: 'bold',
-                                        },
-                                    },
-                                    datalabels: {
-                                        display: false,
-                                        color: '#fff',
-                                        font: {
-                                            weight: 'bold',
-                                            size: 14,
-                                        },
-                                        anchor: 'center',
-                                        align: 'center',
-                                        formatter: (value) => value,
-                                    },
-                                },
-                            }}
-                        />
-                        {maxTopCount && <HeatmapLegend maxCount={maxTopCount} />}
-                    </>
-                ) : (
-                    <p>No data available</p>
-                )}
-            </div>
-
-
-
-            {/* Dropdown estilizado para seleccionar el Barrio */}
-            <div className="select-container" style={{ margin: '20px 0', textAlign: 'center' }}>
-                <label
-                    htmlFor="barrio-select"
-                    className="select-label"
-                    style={{
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        color: '#555',
-                        marginRight: '10px'
-                    }}
-                >
-                    Seleccionar Barrio:
-                </label>
-                <select
-                    id="barrio-select"
-                    className="select-dropdown"
-                    onChange={handleBarrioChange}
-                    value={selectedBarrio}
-                    style={{
-                        padding: '10px 15px',
-                        fontSize: '14px',
-                        borderRadius: '8px',
-                        border: '1px solid #ccc',
-                        backgroundColor: '#fff',
-                        color: '#333',
-                        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-                        outline: 'none',
-                        cursor: 'pointer',
-                        transition: 'border-color 0.3s ease',
-                    }}
-                    onMouseOver={(e) => e.target.style.borderColor = '#FF6F91'}
-                    onMouseOut={(e) => e.target.style.borderColor = '#ccc'}
-                >
-                    <option value="" disabled>Seleccione un barrio</option>
-                    {[...new Set(filteredRestaurants.map(restaurant => restaurant.Barrio))].map(barrio => (
-                        <option key={barrio} value={barrio}>
-                            {barrio}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-
-            {/* Heatmap de Tipos de Cocina */}
-            {selectedBarrio && <CuisineHeatmapChart filteredRestaurants={filteredRestaurants} selectedBarrio={selectedBarrio} />}
-        </div>
-    );
-};
-
-// Leyenda para el Heatmap
-const HeatmapLegend = ({ maxCount }) => {
-    const legendData = [
-        { color: 'rgba(255, 69, 0, 0.8)', label: `> ${Math.round(maxCount * 0.9)} - ${maxCount}` },
-        { color: 'rgba(255, 140, 0, 0.8)', label: `${Math.round(maxCount * 0.7)} - ${Math.round(maxCount * 0.9)}` },
-        { color: 'rgba(255, 195, 0, 0.8)', label: `${Math.round(maxCount * 0.5)} - ${Math.round(maxCount * 0.7)}` },
-        { color: 'rgba(240, 240, 0, 0.8)', label: `${Math.round(maxCount * 0.3)} - ${Math.round(maxCount * 0.5)}` },
-        { color: 'rgba(173, 255, 47, 0.8)', label: `${Math.round(maxCount * 0.1)} - ${Math.round(maxCount * 0.3)}` },
-        { color: 'rgba(0, 255, 127, 0.8)', label: `0 - ${Math.round(maxCount * 0.1)}` },
-    ];
-
-    return (
-        <div style={styles.legendContainer}>
-            {legendData.map((item, index) => (
-                <div key={index} style={styles.legendItem}>
-                    <span style={{ ...styles.legendColor, backgroundColor: item.color }}></span>
-                    <span>{item.label}</span>
-                </div>
-            ))}
-        </div>
-    );
-};
-
-// Heatmap de Cocina
-const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
-    const [cuisineChartData, setCuisineChartData] = useState(null);
-    const [maxCuisineCount, setMaxCuisineCount] = useState(null);
-
-    useEffect(() => {
-        if (!filteredRestaurants || filteredRestaurants.length === 0 || !selectedBarrio) {
-            setCuisineChartData(null);
-            return;
-        }
-
-        const restaurantsInBarrio = filteredRestaurants.filter(restaurant => restaurant.Barrio === selectedBarrio);
-
-        const cuisineCounts = restaurantsInBarrio.reduce((acc, restaurant) => {
+        const cuisineCounts = filteredRestaurants.reduce((acc, restaurant) => {
             const cuisine = restaurant["Categoría Cocina"];
             if (!acc[cuisine]) acc[cuisine] = 0;
             acc[cuisine] += 1;
@@ -242,159 +56,284 @@ const CuisineHeatmapChart = ({ filteredRestaurants, selectedBarrio }) => {
         }, {});
 
         const sortedCuisines = Object.entries(cuisineCounts).sort((a, b) => b[1] - a[1]);
-        const cuisineLabels = sortedCuisines.map(item => item[0]);
-        const cuisineCountsArray = sortedCuisines.map(item => item[1]);
+        const top10Cuisines = sortedCuisines.slice(0, 10);
+        const cuisineLabels = top10Cuisines.map(item => item[0]);
+        const cuisineCountsArray = top10Cuisines.map(item => item[1]);
 
-        const maxCount = Math.max(...cuisineCountsArray);
-        setMaxCuisineCount(maxCount);
+        const maxCuisine = Math.max(...cuisineCountsArray);
+        setMaxCuisineCount(maxCuisine);
 
         setCuisineChartData({
             labels: cuisineLabels,
             datasets: [
                 {
-                    label: 'Cantidad de Restaurantes',
+                    label: 'Cantidad de Restaurantes por Tipo de Cocina',
                     data: cuisineCountsArray,
-                    backgroundColor: cuisineCountsArray.map(value => getHeatmapColor(value, maxCount)),
+                    backgroundColor: cuisineCountsArray.map(value => getHeatmapColor(value, maxCuisine)),
                     borderWidth: 0,
                 },
             ],
         });
-    }, [filteredRestaurants, selectedBarrio]);
+    }, [filteredRestaurants]);
 
     const getHeatmapColor = (value, maxValue) => {
         const ratio = value / maxValue;
-        if (ratio > 0.9) return 'rgba(255, 69, 0, 0.8)';
-        if (ratio > 0.7) return 'rgba(255, 140, 0, 0.8)';
-        if (ratio > 0.5) return 'rgba(255, 195, 0, 0.8)';
-        if (ratio > 0.3) return 'rgba(240, 240, 0, 0.8)';
-        if (ratio > 0.1) return 'rgba(173, 255, 47, 0.8)';
-        return 'rgba(0, 255, 127, 0.8)';
+        if (ratio > 0.9) return '#FF6F61';
+        if (ratio > 0.7) return '#FFC914';
+        if (ratio > 0.5) return '#FFB774';
+        if (ratio > 0.3) return '#A4D4AE';
+        if (ratio > 0.1) return '#ADD8E6';
+        return '#2A3A67';
+    };
+
+    const openModal = (content) => {
+        setModalContent(content);
+        setModalIsOpen(true);
+    };
+
+    const closeModal = () => {
+        setModalIsOpen(false);
     };
 
     return (
-        <div style={styles.cuisineChartContainer}>
-            {cuisineChartData && cuisineChartData.labels ? (
-                <Bar
-                    data={cuisineChartData}
-                    options={{
-                        maintainAspectRatio: false,
-                        indexAxis: 'y',
-                        barThickness: 25,
-                        scales: {
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Tipos de Cocina',
-                                    font: {
-                                        size: 14,
-                                        weight: 'bold',
+        <div style={styles.dashboardContainer}>
+            <div style={styles.chartContainer}>
+                <button onClick={() => openModal("Este gráfico muestra los barrios con la mayor cantidad de restaurantes en Barcelona. Útil para evaluar áreas de alta concentración de competencia, permitiendo identificar zonas saturadas y explorar alternativas con menos competencia.")} style={styles.infoButton}>
+                    Más Info
+                </button>
+                {topChartData ? (
+                    <>
+                        <Bar
+                            data={topChartData}
+                            options={{
+                                maintainAspectRatio: false,
+                                indexAxis: 'x',
+                                barThickness: 20,
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Barrio',
+                                            font: { size: 12, weight: 'bold' },
+                                        },
+                                        ticks: { 
+                                            maxRotation: 45,
+                                            minRotation: 45,
+                                            font: { size: 10 }
+                                        },
+                                    },
+                                    y: { title: {
+                                        display: true,
+                                        text: 'Número de restaurantes',
+                                        font: { size: 12, weight: 'bold' },
+                                    },},
+                                },
+                                plugins: {
+                                    datalabels: { display: false },
+                                    legend: { display: false },
+                                    title: {
+                                        display: true,
+                                        text: ['Top 10', 'Densidad de restaurantes por barrios'],
+                                        font: { size: 14, weight: 'bold' },
                                     },
                                 },
-                                ticks: {
-                                    font: {
-                                        size: 12,
+                            }}
+                        />
+                        <div style={styles.legendOverlay}>
+                            {maxTopCount && <HeatmapLegend maxCount={maxTopCount} />}
+                        </div>
+                    </>
+                ) : (
+                    <p>No hay datos disponibles</p>
+                )}
+            </div>
+
+            <div style={styles.chartContainer}>
+                <button onClick={() => openModal("Aquí puedes ver los tipos de cocina más comunes entre los restaurantes de la zona. Esta información es valiosa para adaptar tu oferta y diferenciarte en el mercado según las preferencias de los clientes.")} style={styles.infoButton}>
+                    Más Info
+                </button>
+                {cuisineChartData ? (
+                    <>
+                        <Bar
+                            data={cuisineChartData}
+                            options={{
+                                maintainAspectRatio: false,
+                                indexAxis: 'x',
+                                barThickness: 20,
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Tipo de Cocina',
+                                            font: { size: 12, weight: 'bold' },
+                                        },
+                                        ticks: { 
+                                            maxRotation: 45,
+                                            minRotation: 45,
+                                            font: { size: 10 }
+                                        },
+                                    },
+                                    y: { title: {
+                                        display: true,
+                                        text: 'Número de restaurantes',
+                                        font: { size: 12, weight: 'bold' },
+                                    }, },
+                                },
+                                plugins: {
+                                    datalabels: { display: false },
+                                    legend: { display: false },
+                                    title: {
+                                        display: true,
+                                        text: ['Top 10', 'Cantidad de restaurantes por tipo'],
+                                        font: { size: 14, weight: 'bold' },
                                     },
                                 },
-                            },
-                            x: {
-                                display: false,
-                            },
-                        },
-                        plugins: {
-                            datalabels: {
-                                display: false,  // Esto asegura que los números NO se muestren
-                              },
-                            legend: { display: false },
-                            title: {
-                                display: true,
-                                text: `Tipos de Cocina en ${selectedBarrio}`,
-                                font: {
-                                    size: 16,
-                                    weight: 'bold',
-                                },
-                            },
-                            
-                        },
-                    }}
-                />
-            ) : (
-                <p>No hay datos disponibles para el barrio seleccionado</p>
-            )}
+                            }}
+                        />
+                        <div style={styles.legendOverlay}>
+                            {maxCuisineCount && <HeatmapLegend maxCount={maxCuisineCount} />}
+                        </div>
+                    </>
+                ) : (
+                    <p>No hay datos disponibles</p>
+                )}
+            </div>
+
+            <Modal isOpen={modalIsOpen} onRequestClose={closeModal} style={modalStyles}>
+                <h2 style={{ color: '#2A3A67' }}>Información Adicional</h2>
+                <p style={{ color: '#4B4B4B' }}>{modalContent}</p>
+                <button onClick={closeModal} style={styles.closeButton}>Entendido</button>
+            </Modal>
         </div>
     );
 };
 
-// Estilos
+const HeatmapLegend = ({ maxCount }) => {
+    const legendData = [
+        { color: '#FF6F61', label: `> ${Math.round(maxCount * 0.9)} - ${maxCount}` },
+        { color: '#FFC914', label: `${Math.round(maxCount * 0.7)} - ${Math.round(maxCount * 0.9)}` },
+        { color: '#FFB774', label: `${Math.round(maxCount * 0.5)} - ${Math.round(maxCount * 0.7)}` },
+        { color: '#A4D4AE', label: `${Math.round(maxCount * 0.3)} - ${Math.round(maxCount * 0.5)}` },
+        { color: '#ADD8E6', label: `${Math.round(maxCount * 0.1)} - ${Math.round(maxCount * 0.3)}` },
+        { color: '#2A3A67', label: `0 - ${Math.round(maxCount * 0.1)}` }
+    ];
+
+    return (
+        <div style={styles.legendContainer}>
+            {legendData.map((item, index) => (
+                <div key={index} style={styles.legendItem}>
+                    <span style={{ ...styles.legendColor, backgroundColor: item.color }}></span>
+                    <span style={{ fontSize: '10px' }}>{item.label}</span>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 const styles = {
     dashboardContainer: {
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
         width: '100%',
-        padding: '30px 20px',
-        backgroundColor: '#f9f9f9',
+        padding: '20px 15px',
+        backgroundColor: '#E8E8E8',
         borderRadius: '12px',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        marginTop: '30px',
-        gap: '40px',
+        gap: '30px',
+        marginTop: '20px',
     },
     chartContainer: {
-        width: '90%',
-        backgroundColor: '#ffffff',
-        padding: '25px',
+        position: 'relative',
+        width: '40%',
+        backgroundColor: '#FFFFFF',
+        padding: '15px',
         borderRadius: '12px',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        height: '450px',
+        height: '400px',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
     },
-    treeMapContainer: {
-        width: '90%',
-        backgroundColor: '#ffffff',
-        padding: '25px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        height: '450px',
-        overflowY: 'auto',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+    infoButton: {
+        position: 'absolute',
+        bottom: '10px',
+        right: '10px',
+        padding: '5px 10px',
+        backgroundColor: '#FF6F61',
+        color: '#FFFFFF',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '12px',
+        fontWeight: 'bold',
     },
-    cuisineChartContainer: {
-        width: '90%',
-        backgroundColor: '#ffffff',
-        padding: '25px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        height: '450px',
-        overflowY: 'auto',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+    legendOverlay: {
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+        backgroundColor: '#FFFFFF',
+        padding: '5px 10px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     },
     legendContainer: {
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: '15px',
-        backgroundColor: '#ffffff',
-        padding: '15px 25px',
-        borderRadius: '12px',
-        width: '100%',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
     },
     legendItem: {
         display: 'flex',
         alignItems: 'center',
-        marginRight: '15px',
+        marginBottom: '3px',
+        color: '#2A3A67',
+        fontWeight: 'bold',
     },
     legendColor: {
-        width: '25px',
-        height: '25px',
+        width: '10px',
+        height: '10px',
         borderRadius: '4px',
-        marginRight: '10px',
+        marginRight: '5px',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
+    },
+    closeButton: {
+        marginTop: '20px',
+        padding: '8px 12px',
+        backgroundColor: '#2A3A67',
+        color: '#FFFFFF',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
     },
 };
+
+const modalStyles = {
+    overlay: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semitransparente
+        position: 'fixed',                   // Asegura que cubre toda la ventana
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,                        // Z-index alto para asegurarse de que esté en la parte superior
+    },
+    content: {
+        position: 'fixed',              // Mantener el modal fijo en la pantalla
+        bottom: '0',                    // Colocarlo en la parte inferior
+        left: '50%',                    // Centrar horizontalmente
+        transform: 'translateX(-50%)',  // Alinear en el centro
+        borderRadius: '8px',
+        padding: '10px 20px',          // Ajustar el padding para un poco de espacio interno
+        backgroundColor: '#FFFFFF',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+        maxWidth: '400px',  
+        height:'350px',            // Ancho máximo para mantener el tamaño pequeño
+        zIndex: 1000,                   // Asegúrate de que esté en la parte superior
+    },
+};
+
+
 
 export default Dashboard;
